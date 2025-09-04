@@ -16,6 +16,17 @@ class STREET_SPELLCASTERS_API ACampfireUpgrade : public AActor
 	
 public:	
 	ACampfireUpgrade();
+
+	UFUNCTION(BlueprintCallable, Category = "Map")
+	FVector2D GetMapPosition() const { return FVector2D(GetActorLocation().X, GetActorLocation().Y); }
+    
+	// Иконка для карты
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Map")
+	UTexture2D* MapIcon;
+    
+	// Размер иконки на карте
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Map")
+	FVector2D MapIconSize = FVector2D(32.0f, 32.0f);
 	
 protected:
 	
@@ -28,6 +39,9 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Collision")
 	UBoxComponent* OverlapBoxComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sounds")
+	USoundBase* HealSound;
 	
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

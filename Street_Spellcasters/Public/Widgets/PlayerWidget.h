@@ -77,4 +77,12 @@ protected:
 public:
 	UFUNCTION()
 	void LevelTextUpdate(int32 NewLevel);
+
+	UFUNCTION()
+	void FlasksTextUpdate(int32 NewFlasks);
+protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flasks", meta = (BindWidget))
+	UTextBlock* FlaskText;
+	
 };

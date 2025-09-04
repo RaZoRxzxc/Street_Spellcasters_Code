@@ -73,5 +73,10 @@ void UPlayerWidget::LevelTextUpdate(int32 NewLevel)
 	LevelText->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewLevel)));
 }
 
+void UPlayerWidget::FlasksTextUpdate(int32 NewFlasks)
+{
+	FlaskText->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewFlasks)));
+}
+
 
 

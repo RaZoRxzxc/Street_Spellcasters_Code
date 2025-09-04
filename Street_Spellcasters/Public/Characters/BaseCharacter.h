@@ -76,8 +76,25 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* EvadeAction;
 
+	// Interact Input Action
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* InteractAction;
+
+	// Heal Input Action
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* HealAction;
+
+	// Map Input Action
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* MapAction;
+
+	// Zoom in Input Action
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* ZoomInAction;
+
+	// Zoom out Input Action
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* ZoomOutAction;
 	
 	// Mapping context
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
@@ -129,6 +146,12 @@ private:
 	void StartSprint();
 public:
 	void StopSprint();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sprint")
+	float WalkSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sprint")
+	float SprintSpeed;
 	
 private:
 	/** Setup input function */
@@ -266,6 +289,43 @@ public:
 
 	// Tick function
 	virtual void Tick(float DeltaTime) override;
+
+protected:
+
+	// Flasks heal animation montage
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Animation")
+	UAnimMontage* HealFlaskMontage;
+
+	// Flask heal function 
+	UFUNCTION()
+	void Heal();
+
+public:
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Map")
+	class UMiniMapWidget* MapWidget;
+
+protected:
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map")
+	TSubclassOf<UUserWidget> MapWidgetClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Map")
+	FVector2D MouseMapPosition;
+	
+	bool bIsMapOpen = false;
+
+	UFUNCTION(BlueprintCallable)
+	void ToggleMap();
+
+	UFUNCTION()
+	void ZoomInMap();
+
+	UFUNCTION()
+	void ZoomOutMap();
+
+	UFUNCTION(BlueprintCallable)
+	bool IsMapOpen() const { return bIsMapOpen; }
 	
 
 };

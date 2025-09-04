@@ -2,7 +2,7 @@
 
 
 #include "Actors/CampfireUpgrade.h"
-
+#include "Widgets/MiniMapWidget.h"
 #include "Characters/BaseCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/StatsComponent.h"
@@ -34,6 +34,11 @@ void ACampfireUpgrade::BeginPlay()
 
 	OverlapBoxComp->OnComponentBeginOverlap.AddDynamic(this, &ACampfireUpgrade::ACampfireUpgrade::OnOverlapBegin);
 	OverlapBoxComp->OnComponentEndOverlap.AddDynamic(this, &ACampfireUpgrade::OnOverlapEnd);
+
+	// Register this campfire on all player maps
+	TArray<AActor*> PlayerCharacters;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseCharacter::StaticClass(), PlayerCharacters);
+
 	
 }
 
@@ -57,11 +62,22 @@ void ACampfireUpgrade::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActo
 		{
 			if (!Player->CanLevelUp())
 			{
+				// Show interact horizontal box when player overlap collision
 				PlayerHUD->ShowUpgradeBox();
 			}
+			
+			// Show upgrade widget
 			Player->SetCanShowLevelUpPanel(true);
 		}
+
+		// Restore stats to max
 		Player->StatsComponent->RestoreStatsToMax();
+
+		// Play heal sound when player overlap collision 
+		if (HealSound)
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), HealSound);
+		}
 	}
 }
 
@@ -73,10 +89,17 @@ void ACampfireUpgrade::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor*
 	{
 		if (APlayerHUD* PlayerHUD = Cast<APlayerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD()))
 		{
+			// Hide interact horizontal box
 			PlayerHUD->HideUpgradeBox();
+
+			// If the level up menu is open, it will close when the player exits the collision.
+			if(PlayerHUD->IsLevelMenuOpen())
+			{
+				PlayerHUD->HideLevelUpMenu();
+			}
 		}
 
-		Player->SetCanShowLevelUpPanel(false);
+		//Player->SetCanShowLevelUpPanel(false);
 	}
 }
 

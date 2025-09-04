@@ -10,7 +10,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Animation/AnimInstance.h"
-#include "Blueprint/UserWidget.h"
+#include "Widgets/MiniMapWidget.h"
 #include "Components/StatsComponent.h"
 #include "Components/CombatComponent.h"
 #include "Projectile/BaseProjectile.h"
@@ -32,7 +32,9 @@ ABaseCharacter::ABaseCharacter()
 	CameraComp->SetupAttachment(SpringArm);
 	CameraComp->bUsePawnControlRotation = false;
 
-	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	WalkSpeed = 300.0f;
+	SprintSpeed = 900.f;
 
 	StatsComponent = CreateDefaultSubobject<UStatsComponent>("StatsComponent");
 
@@ -53,6 +55,9 @@ ABaseCharacter::ABaseCharacter()
 		PerceptionStimuliSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
 		PerceptionStimuliSource->RegisterWithPerceptionSystem();
 	}
+
+	MapWidgetClass = nullptr;
+	MapWidget = nullptr;
 }
 
 void ABaseCharacter::BeginPlay()
@@ -62,6 +67,17 @@ void ABaseCharacter::BeginPlay()
 	StatsComponent->OnDeath.AddDynamic(this, &ABaseCharacter::isDead);
 	
 	SpawnWeapon();
+
+	// if (MapWidgetClass)
+	// {
+	// 	MapWidget = CreateWidget<UMiniMapWidget>(GetWorld(), MapWidgetClass);
+	// 	if (MapWidget)
+	// 	{
+	// 		MapWidget->AddToViewport();
+	// 		MapWidget->SetVisibility(ESlateVisibility::Collapsed);
+	// 	}
+	// }
+	
 }
 
 void ABaseCharacter::Tick(float DeltaTime)
@@ -73,7 +89,42 @@ void ABaseCharacter::Tick(float DeltaTime)
 	{
 		StatsComponent->UpdateMovementState(bIsMovingNow);
 	}
+	
 }
+
+void ABaseCharacter::Heal()
+{
+	if (StatsComponent->Health < StatsComponent->MaxHealth)
+	{
+		StatsComponent->AddHealth();
+		PlayAnimMontage(HealFlaskMontage);
+	}
+}
+
+void ABaseCharacter::ToggleMap()
+{
+	if (APlayerHUD* PlayerHUD = Cast<APlayerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD()))
+	{
+		PlayerHUD->ToggleMap();
+	}
+}
+
+void ABaseCharacter::ZoomInMap()
+{
+	if (MapWidget && bIsMapOpen)
+	{
+	}
+}
+
+void ABaseCharacter::ZoomOutMap()
+{
+	if (MapWidget && bIsMapOpen)
+	{
+		
+	}
+}
+
+
 
 void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -113,7 +164,18 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInput->BindAction(BlockAction, ETriggerEvent::Triggered, this, &ABaseCharacter::StartBlocking);
 		EnhancedInput->BindAction(BlockAction, ETriggerEvent::Completed, this, &ABaseCharacter::EndBlocking);
 
+		// Open level menu
 		EnhancedInput->BindAction(InteractAction, ETriggerEvent::Started, this, &ABaseCharacter::TryOpenLevelUpPanel);
+
+		// Healing 
+		EnhancedInput->BindAction(HealAction, ETriggerEvent::Started, this, &ABaseCharacter::Heal);
+
+		// Open map
+		EnhancedInput->BindAction(MapAction, ETriggerEvent::Started, this, &ABaseCharacter::ToggleMap);
+
+		// Zooming map
+		EnhancedInput->BindAction(ZoomInAction, ETriggerEvent::Started, this, &ABaseCharacter::ZoomInMap);
+		EnhancedInput->BindAction(ZoomOutAction, ETriggerEvent::Started, this, &ABaseCharacter::ZoomOutMap);
 	}
 }
 
@@ -138,21 +200,24 @@ void ABaseCharacter::StopJumping()
 // Spawn projectile in hands
 void ABaseCharacter::SpawnProjectile()
 {
-
+	// Sockets location on character mesh
 	FVector LeftSpawnLocation = GetMesh()->GetSocketLocation("LeftProjectile");
 	FVector RightSpawnLocation = GetMesh()->GetSocketLocation("RightProjectile");
 
+	// Camera rotation and location 
 	FVector CameraLocation;
 	FRotator CameraRotation;
 	Controller->GetPlayerViewPoint(CameraLocation, CameraRotation);
-	
-	FVector TargetLocation = CameraLocation + CameraRotation.Vector() * 2000.0f;
 
+	// The direction of the projectile's flight from the character's hands to the center of the screen
+	FVector TargetLocation = CameraLocation + CameraRotation.Vector() * 2000.0f;
+	
 	FVector LeftShootDirection = (TargetLocation - LeftSpawnLocation).GetSafeNormal();
 	FVector RightShootDirection = (TargetLocation - RightSpawnLocation).GetSafeNormal();
 	
 	ABaseProjectile* Projectile = nullptr;
-	
+
+	// Check on left hand and spawn projectile on left or right hands when player attacking
 	if (bIsLeftHand)
 	{
 		bIsLeftHand = false;
@@ -164,6 +229,7 @@ void ABaseCharacter::SpawnProjectile()
 		Projectile = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileActor, LeftSpawnLocation, LeftShootDirection.Rotation());
 	}
 
+	// Set projectile damage
 	if (ProjectileActor && CurrentWeapon)
 	{
 		Projectile->SetDamage(CurrentWeapon->Damage);
@@ -173,18 +239,24 @@ void ABaseCharacter::SpawnProjectile()
 // Spawn Projectile for magic staff weapon
 void ABaseCharacter::SpawnStaffProjectile()
 {
+	// Find closest enemy
 	AActor* TargetEnemy = FindClosestEnemy();
+
+	// Spawn projectile location  
 	FVector SpawnLocation = CurrentWeapon ? CurrentWeapon->WeaponMesh->GetSocketLocation(StaffProjectileSocket) : GetActorLocation();
     
 	FRotator SpawnRotation;
 	FVector ShootDirection;
-	
+
+	// Projectile flies into the nearest enemy
 	if (TargetEnemy)
 	{
 		ShootDirection = (TargetEnemy->GetActorLocation() - SpawnLocation).GetSafeNormal();
 	}
 	else
 	{
+		// Projectile flies forward when there are no enemies nearby
+		
 		FVector CameraLocation;
 		FRotator CameraRotation;
         
@@ -343,7 +415,7 @@ void ABaseCharacter::StartSprint()
 		bIsSprint = true;
 		StatsComponent->SetSprinting(bIsSprint);
 		
-		GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+		GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 	}
 	else if (!StatsComponent->CanSprinting())
 	{
@@ -358,7 +430,7 @@ void ABaseCharacter::StopSprint()
 		bIsSprint = false;
 		StatsComponent->SetSprinting(bIsSprint);
 		
-		GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	}
 	
 }

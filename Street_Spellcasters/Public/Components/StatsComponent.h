@@ -34,6 +34,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStatsChanged, float, CurrentHeal
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamageChanged, float, CurrentDamage);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLevelChanged, int32, NewLevel);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSoulsChanged, int32, SoulsAmount);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFlasksChanged, int32, Flasks);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class STREET_SPELLCASTERS_API UStatsComponent : public UActorComponent, public ICombatInterface
@@ -47,10 +48,6 @@ public:
 	// Stats changed delegate
 	UPROPERTY(BlueprintAssignable)
 	FOnStatsChanged OnStatsChanged;
-
-	// Restore health and stamina when player overlap campfire collision
-	UFUNCTION()
-	void RestoreStatsToMax();
 	
 protected:
 
@@ -133,12 +130,30 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Health")
 	float MaxHealth;
 
+	// Restore health and stamina when player overlap campfire collision
+	UFUNCTION()
+	void RestoreStatsToMax();
+
+	UFUNCTION()
+	void AddHealth();
+
+	UPROPERTY(BlueprintAssignable)
+	FOnFlasksChanged OnFlasksChanged;
+
+	UFUNCTION()
+	int32 GetFlasksAmount() const { return FlasksAmount; }
 protected:
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Health")
+	float PlusHealth;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Flasks")
+	int32 FlasksAmount;
+	
 	// Apply damage function
 	UFUNCTION(BlueprintCallable)
 	void ApplyDamage(AActor* DamagedActor,float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
-
-
+	
 	// =========================  COMBAT SYSTEM =========================
 	
 public:

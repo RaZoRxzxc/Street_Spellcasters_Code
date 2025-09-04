@@ -68,4 +68,19 @@ protected:
 
 	UFUNCTION()
 	void UpdateLevel(int32 NewLevel);
+
+	UFUNCTION()
+	void UpdateFlasksAmount(int32 NewFlasks);
+
+	bool bIsMapOpen = false;
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UMiniMapWidget* MapWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UUserWidget> MapWidgetClass;
+
+	UFUNCTION()
+	void ToggleMap();
 };

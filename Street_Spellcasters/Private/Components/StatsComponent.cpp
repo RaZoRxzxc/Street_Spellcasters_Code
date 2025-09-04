@@ -14,34 +14,40 @@ UStatsComponent::UStatsComponent()
 
 	bIsTraceOn = false;
 
+	// Evade variables
 	EvadeSectionName = "";
 	bIsEvading = false;
 	EvadeDirection = EEvadeDirection::None;
 	ResetEvadeDirectionTimerRate = 0.1f;
-	
+
+	// Stamina variables
 	MaxStamina = 100.0f;
 	CurrentStamina = MaxStamina;
 	StaminaRegenRate = 15.0f;
 	StaminaRegenDelay = 1.0f;
 	AttackStaminaCost = 10.0f;
 	SprintStaminaCost = 5.0f;
-	EvadeStaminaCost = 5.0f;
+	EvadeStaminaCost = 25.0f;
 
 	DamageBlockMultiplier = 0.7f;
 
+	// Hit direction variables
 	HitDirectionName = "";
 	HitDirection = EHitDirection::None;
-	
+
+	// Health variables
 	MaxHealth = 100;
 	Health = MaxHealth;
+	PlusHealth = 40.0f;
+
+	// Flasks amount
+	FlasksAmount = 3;
+	
 }
 
 void UStatsComponent::BeginPlay()
 {
     Super::BeginPlay();
-    
-    Health = MaxHealth;
-    CurrentStamina = MaxStamina;
     
     AActor* Owner = GetOwner();
     if (Owner)
@@ -54,6 +60,19 @@ void UStatsComponent::RestoreStatsToMax()
 {
 	Health = MaxHealth;
 	CurrentStamina = MaxStamina;
+	FlasksAmount = 3;
+	OnFlasksChanged.Broadcast(FlasksAmount);
+}
+
+void UStatsComponent::AddHealth()
+{
+	if (FlasksAmount > 0)
+	{
+		Health = FMath::Clamp(Health + PlusHealth,0,MaxHealth);
+		FlasksAmount--;
+		OnFlasksChanged.Broadcast(FlasksAmount);
+		OnStatsChanged.Broadcast(GetHealthPercent(), GetStaminaPercent());
+	}
 }
 
 void UStatsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -62,7 +81,7 @@ void UStatsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 
 	MeleeTrace();
 
-	if (bIsSprinting && bIsActuallyMoving && CanSprinting())
+	if (bIsSprinting && bIsActuallyMoving && CanSprinting() && !bIsBlocking)
 	{
 		const float StaminaDrain = SprintStaminaCost * DeltaTime;
 		ConsumeStamina(StaminaDrain);
@@ -217,7 +236,6 @@ void UStatsComponent::ApplyDamage(AActor* DamagedActor,float Damage, const class
 		}
 	}
 
-	
 	CalculateHitDirection(DamageCauser->GetActorLocation());
 	PlayHitAnimation(bWasBlocked);
 	

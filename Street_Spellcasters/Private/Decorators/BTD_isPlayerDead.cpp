@@ -18,7 +18,6 @@ bool UBTD_isPlayerDead::CalculateRawConditionValue(UBehaviorTreeComponent& Owner
 		{
 			bool bIsDead;
 			ICombatInterface::Execute_isPlayerDead(character, bIsDead);
-			UE_LOG(LogTemp, Warning, TEXT("Player is dead: %d"), bIsDead);
 			return !bIsDead;
 		}
 	}

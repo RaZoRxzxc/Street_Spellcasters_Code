@@ -2,7 +2,7 @@
 
 
 #include "Widgets/PlayerHUD.h"
-#include "Weapon/BaseWeapon.h"
+#include "Widgets/MiniMapWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Widgets/LevelUpMenuWidget.h"
 #include "Components/HealthComponent.h"
@@ -35,8 +35,21 @@ void APlayerHUD::BeginPlay()
 
 					StatsComp->OnLevelChanged.AddDynamic(this, &APlayerHUD::UpdateLevel);
 					UpdateLevel(StatsComp->Level);
+
+					StatsComp->OnFlasksChanged.AddDynamic(this, &APlayerHUD::UpdateFlasksAmount);
+					UpdateFlasksAmount(StatsComp->GetFlasksAmount());
 				}
 			}
+		}
+	}
+
+	if (MapWidgetClass)
+	{
+		MapWidget = CreateWidget<UMiniMapWidget>(GetWorld(), MapWidgetClass);
+		if (MapWidget)
+		{
+			MapWidget->AddToViewport();
+			MapWidget->SetVisibility(ESlateVisibility::Collapsed);
 		}
 	}
 }
@@ -130,5 +143,48 @@ void APlayerHUD::UpdateLevel(int32 NewLevel)
 	if (PlayerWidget)
 	{
 		PlayerWidget->LevelTextUpdate(NewLevel);
+	}
+}
+
+void APlayerHUD::UpdateFlasksAmount(int32 NewFlasks)
+{
+	if (PlayerWidget)
+	{
+		PlayerWidget->FlasksTextUpdate(NewFlasks);
+	}
+}
+
+void APlayerHUD::ToggleMap()
+{
+	APlayerController* PC = GetOwningPlayerController();
+	if (!PC) return;
+
+	if (!MapWidget && MapWidgetClass)
+	{
+		MapWidget = CreateWidget<UMiniMapWidget>(PC, MapWidgetClass);
+		if (MapWidget)
+		{
+			MapWidget->AddToViewport();
+			MapWidget->SetVisibility(ESlateVisibility::Collapsed);
+		}
+	}
+
+	if (MapWidget)
+	{
+		bIsMapOpen = !bIsMapOpen;
+
+		if (bIsMapOpen)
+		{
+			MapWidget->SetVisibility(ESlateVisibility::Visible);
+			PC->SetInputMode(FInputModeGameAndUI());
+			PC->bShowMouseCursor = true;
+			
+		}
+		else
+		{
+			MapWidget->SetVisibility(ESlateVisibility::Collapsed);
+			PC->SetInputMode(FInputModeGameOnly());
+			PC->bShowMouseCursor = false;
+		}
 	}
 }
