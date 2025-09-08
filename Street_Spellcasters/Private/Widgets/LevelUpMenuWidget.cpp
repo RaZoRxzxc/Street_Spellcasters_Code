@@ -68,12 +68,12 @@ void ULevelUpMenuWidget::NativeConstruct()
 		UpgradeButton->OnClicked.AddDynamic(this, &ULevelUpMenuWidget::Upgrade);
 	}
 
-	// Update weapon damage 
 	if (StatsComponent)
 	{
+		// Update weapon damage 
 		StatsComponent->OnDamageChanged.AddDynamic(this, &ULevelUpMenuWidget::UpdateDamage);
-	}
 
+	}
 	// Update stats menu
 	UpdateStatsMenu();
 }

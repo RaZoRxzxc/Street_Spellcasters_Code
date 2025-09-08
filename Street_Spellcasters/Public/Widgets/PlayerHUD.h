@@ -8,6 +8,7 @@
 
 class UPlayerWidget;
 class ULevelUpMenuWidget;
+class ABaseEnemyCharacter;
 
 UCLASS()
 class STREET_SPELLCASTERS_API APlayerHUD : public AHUD
@@ -49,10 +50,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
 	ULevelUpMenuWidget* LevelUpWidget;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
-	TSubclassOf<UUserWidget> WidgetClass;
-
+	//
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
+	// TSubclassOf<UUserWidget> WidgetClass;
+	
 public:
 
 	UFUNCTION()
@@ -73,6 +74,16 @@ protected:
 	void UpdateFlasksAmount(int32 NewFlasks);
 
 	bool bIsMapOpen = false;
+
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	// UTexture2D* EnemyImage;
+	//
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Enemy")
+	// TSubclassOf<ABaseEnemyCharacter> Enemyclass;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Enemy")
+	TArray<AActor*> EnemyArray;
+	
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

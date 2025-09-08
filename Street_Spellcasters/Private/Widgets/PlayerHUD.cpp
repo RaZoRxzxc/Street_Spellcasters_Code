@@ -5,7 +5,6 @@
 #include "Widgets/MiniMapWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Widgets/LevelUpMenuWidget.h"
-#include "Components/HealthComponent.h"
 #include "Components/HorizontalBox.h"
 #include "Components/StatsComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -50,6 +49,13 @@ void APlayerHUD::BeginPlay()
 		{
 			MapWidget->AddToViewport();
 			MapWidget->SetVisibility(ESlateVisibility::Collapsed);
+
+			// UGameplayStatics::GetAllActorsOfClass(GetWorld(), Enemyclass, EnemyArray);
+			// for (AActor* Enemy : EnemyArray)
+			// {
+			// 	MapWidget->MapWidget->AddNewPOI(Enemy, EnemyImage, FVector2D(50, 50), FLinearColor::Red);
+			// 	UE_LOG(LogTemp, Warning, TEXT("Enemy added"))
+			// }
 		}
 	}
 }
@@ -97,45 +103,41 @@ void APlayerHUD::HideUpgradeBox()
 
 void APlayerHUD::ShowLevelUpMenu()
 {
-	if (WidgetClass)
+	if (PlayerWidget)
 	{
-		LevelUpWidget = CreateWidget<ULevelUpMenuWidget>(GetWorld(), WidgetClass);
-		if (LevelUpWidget)
-		{
-			if (const APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
-			{
-				auto* StatsComp = PlayerPawn->FindComponentByClass<UStatsComponent>();
-				LevelUpWidget->SetStatsComponent(StatsComp);
-				LevelUpWidget->AddToViewport();
-				HideUpgradeBox();
-			}
+		HideUpgradeBox();
+		PlayerWidget->LevelUpMenu->SetVisibility(ESlateVisibility::Visible);
 
-			APlayerController* PC = GetOwningPlayerController();
-			if (PC)
-			{
-				PC->bShowMouseCursor = true;
-				PC->SetInputMode(FInputModeGameAndUI());
-			}
+		APlayerController* PC = GetOwningPlayerController();
+		if (PC)
+		{
+			PC->bShowMouseCursor = true;
+			PC->SetInputMode(FInputModeGameAndUI());
 		}
 	}
 }
 
 void APlayerHUD::HideLevelUpMenu()
 {
-	LevelUpWidget->RemoveFromParent();
-	ShowUpgradeBox();
-
-	APlayerController* PC = GetOwningPlayerController();
-	if (PC)
+	//LevelUpWidget->RemoveFromParent();
+	
+	if (PlayerWidget)
 	{
-		PC->bShowMouseCursor = false;
-		PC->SetInputMode(FInputModeGameOnly());
+		PlayerWidget->LevelUpMenu->SetVisibility(ESlateVisibility::Collapsed);
+		ShowUpgradeBox();
+
+		APlayerController* PC = GetOwningPlayerController();
+		if (PC)
+		{
+			PC->bShowMouseCursor = false;
+			PC->SetInputMode(FInputModeGameOnly());
+		}
 	}
 }
 
 bool APlayerHUD::IsLevelMenuOpen() const
 {
-	return LevelUpWidget && LevelUpWidget->IsInViewport();
+	return PlayerWidget && PlayerWidget->LevelUpMenu->IsVisible();
 }
 
 void APlayerHUD::UpdateLevel(int32 NewLevel)

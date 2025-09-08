@@ -21,5 +21,7 @@ void UPointOfInterestWidget::Update(FVector2D ImageSize, FSlateColor Tint, UObje
 		SlateBrush.DrawAs = ESlateBrushDrawType::Image;
 		
 		MainImage->SetBrush(SlateBrush);
+
+		UE_LOG(LogTemp, Warning, TEXT("Update POI"));
 	}
 }

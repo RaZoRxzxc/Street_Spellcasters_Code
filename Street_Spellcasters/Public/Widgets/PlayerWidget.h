@@ -24,7 +24,12 @@ public:
 
 	virtual void NativePreConstruct() override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LevelUp", meta = (BindWidget))
+	class ULevelUpMenuWidget* LevelUpMenu;
 protected:
+	UFUNCTION()
+	void SetStatsComponent(UStatsComponent* StatsComp);
+	
 	FTimerHandle BackHealthTimer;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health", meta = (BindWidget))

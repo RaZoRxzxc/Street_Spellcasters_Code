@@ -4,7 +4,6 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/CombatComponent.h"
 #include "GameFramework/Character.h"
 #include "Weapon/BaseWeapon.h"
 #include "Interface/CombatInterface.h"

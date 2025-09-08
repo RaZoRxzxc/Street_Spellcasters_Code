@@ -14,7 +14,18 @@ class STREET_SPELLCASTERS_API UMiniMapWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class UBorder* MapContainer;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UMapWidget* MapWidget;
+
+	UFUNCTION(BlueprintCallable)
+	void ZoomInMap();
+    
+	UFUNCTION(BlueprintCallable)
+	void ZoomOutMap();
+
+protected:
+	virtual void NativeConstruct() override;
 };

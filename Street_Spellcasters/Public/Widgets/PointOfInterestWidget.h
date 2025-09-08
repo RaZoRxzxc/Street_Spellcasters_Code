@@ -18,7 +18,7 @@ class STREET_SPELLCASTERS_API UPointOfInterestWidget : public UUserWidget
 	
 public:
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void Update(FVector2D ImageSize, FSlateColor Tint, UObject* Image, UOverlaySlot* OverlayOb, AActor* ActorOwner);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

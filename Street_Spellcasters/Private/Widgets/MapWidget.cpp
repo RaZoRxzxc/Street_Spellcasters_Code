@@ -2,19 +2,20 @@
 
 
 #include "Widgets/MapWidget.h"
-
+#include "Actors/CampfireUpgrade.h"
 #include "Components/Image.h"
 #include "Styling/SlateTypes.h"
 #include "Styling/SlateColor.h"
 #include "Components/Overlay.h"
+#include "Components/ScaleBox.h"
 #include "Kismet/GameplayStatics.h"
 #include "Widgets/PointOfInterestWidget.h"
 
 
 void UMapWidget::UpdatePointOfInterests()
 {
+
 	float LocalSize = GetCachedGeometry().GetLocalSize().X;
-	UE_LOG(LogTemp, Warning, TEXT("LocalSize: %f, POI Count: %d"), LocalSize, PointOfInterests.Num());
     
 	if (LocalSize > 0)
 	{
@@ -23,60 +24,83 @@ void UMapWidget::UpdatePointOfInterests()
 			if (PointOfInterest && PointOfInterest->OwnerActor)
 			{
 				FVector PlayerLoc = PointOfInterest->OwnerActor->GetActorLocation();
-				UE_LOG(LogTemp, Warning, TEXT("Player Location: X=%f, Y=%f, Z=%f"), 
-					  PlayerLoc.X, PlayerLoc.Y, PlayerLoc.Z);
+	
 				auto OverlaySlot = PointOfInterest->OverlaySlot;
+				
+				float NormalizedX = ((PlayerLoc.X * -1.0f) / MapWidth) * LocalSize / CurrentScaleValue;
+				float NormalizedY = (PlayerLoc.Y / MapWidth) * LocalSize / CurrentScaleValue;
                 
-				// Правильное преобразование мировых координат в координаты виджета
-				float NormalizedX = (PlayerLoc.X / MapWidth) * LocalSize;
-				float NormalizedY = (PlayerLoc.Y / MapWidth) * LocalSize;
+				OverlaySlot->SetPadding(FMargin(NormalizedY, NormalizedX, 0, 0));
                 
-				// Центрирование относительно размера виджета POI
-				if (PointOfInterest->MainImage)
-				{
-					FVector2D POISize = PointOfInterest->MainImage->GetDesiredSize();
-					NormalizedX -= POISize.X * 0.5f;
-					NormalizedY -= POISize.Y * 0.5f;
-				}
-                
-				OverlaySlot->SetPadding(FMargin(NormalizedX, NormalizedY, 0, 0));
-                
-				// Поворот (если нужно)
-				PointOfInterest->SetRenderTransformAngle(PlayerLoc.Z);
+				auto ActorRot = PointOfInterest->OwnerActor->GetActorRotation().Yaw;
+				PointOfInterest->SetRenderTransformAngle(ActorRot + 0.0f);
 			}
 		}
 	}
-	
+}
+
+void UMapWidget::RegisterCampfires(ACampfireUpgrade* Campfire)
+{
+	if (Campfire && !RegisteredCampfires.Contains(Campfire))
+	{
+		RegisteredCampfires.Add(Campfire);
+
+		if (CampfireImage)
+		{
+			AddNewPOI(Campfire, CampfireImage, FVector2D(25, 25), FLinearColor::Red);
+		}
+	}
+}
+
+void UMapWidget::UpdateCampfires()
+{
+	UpdatePointOfInterests();
 }
 
 void UMapWidget::AddNewPOI(AActor* TrackActor, UTexture2D* Image, FVector2D ImageSize, FLinearColor SpecifiedColor)
 {
-	if (TrackActor)
+	
+	if (TrackActor && POIWidgetClass)
 	{
-		POIWidget = CreateWidget<UPointOfInterestWidget>(GetOwningPlayer(), POIWidgetClass);
-		if (POIWidget)
+		UPointOfInterestWidget* NewPOI = CreateWidget<UPointOfInterestWidget>(GetOwningPlayer(), POIWidgetClass);
+		if (NewPOI)
 		{
-			auto POIOverlaySlot = MainOverlay->AddChildToOverlay(POIWidget);
-			PointOfInterests.Add(POIWidget);
-			
+			UOverlaySlot* POIOverlaySlot = MainOverlay->AddChildToOverlay(NewPOI);
+			PointOfInterests.Add(NewPOI);
+            
 			FSlateColor SlateColor(SpecifiedColor);
-			
-			POIWidget->Update(ImageSize,SlateColor , Image, POIOverlaySlot, TrackActor);
+			NewPOI->Update(ImageSize, SlateColor, Image, POIOverlaySlot, TrackActor);
 			
 			POIOverlaySlot->SetVerticalAlignment(VAlign_Center);
 			POIOverlaySlot->SetHorizontalAlignment(HAlign_Center);
+			
+			UpdatePointOfInterests();
 		}
 	}
-	
+}
+
+FReply UMapWidget::NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	if (InMouseEvent.GetWheelDelta() > 0)
+	{
+		ZoomIn();
+	}
+	else
+	{
+		ZoomOut();
+	}
+    
+	return FReply::Handled();
 }
 
 float UMapWidget::GetCurrentScale()
 {
-	FWidgetTransform WidgetTransform = GetRenderTransform();
-	
-	FVector2D CurrentScale = WidgetTransform.Scale;
-	float X = CurrentScale.X;
-	return X;
+	// FWidgetTransform WidgetTransform = GetRenderTransform();
+	//
+	// FVector2D CurrentScale = WidgetTransform.Scale;
+	// float X = CurrentScale.X;
+	// return X;
+	return CurrentScaleValue;
 	
 }
 
@@ -94,6 +118,8 @@ void UMapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
 	UpdatePointOfInterests();
+
+	UE_LOG(LogTemp, Warning, TEXT("Tick"));
 }
 
 void UMapWidget::NativeConstruct()
@@ -104,23 +130,41 @@ void UMapWidget::NativeConstruct()
 	
 	if (!bDoOnce)
 	{
-		FSlateBrush SlateBrush;
-		SlateBrush.SetResourceObject(MapTexture);
-		SlateBrush.ImageSize = FVector2D(1024, 1024);
-		MapImage->SetBrush(SlateBrush);
-	
-		FLinearColor LinearColor;
-		LinearColor.FromSRGBColor(FColor::Green);
-		
+		InitialSize = GetDesiredSize();
+		if (MapTexture && MapImage)
+		{
+			FVector2D TextureSize = FVector2D(MapTexture->GetSizeX(), MapTexture->GetSizeY());
+            
+			FSlateBrush SlateBrush;
+			SlateBrush.SetResourceObject(MapTexture);
+			SlateBrush.ImageSize = TextureSize;
+			MapImage->SetBrush(SlateBrush);
+		}
+
 		if (GetOwningPlayer())
 		{
 			OwnerPawn = GetOwningPlayer()->GetPawn();
-			if (OwnerPawn)
+			if (OwnerPawn && PlayerImage)
 			{
-				AddNewPOI(OwnerPawn, PlayerImage, FVector2D(50, 50), LinearColor);
-				UE_LOG(LogTemp, Warning, TEXT("POI Added for player"));
+				AddNewPOI(OwnerPawn, PlayerImage, FVector2D(24, 24), FLinearColor::Green);
 			}
 		}
+
+		if (GetWorld())
+		{
+			TArray<AActor*> CampfireActors;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACampfireUpgrade::StaticClass(), CampfireActors);
+            
+			for (AActor* Actor : CampfireActors)
+			{
+				if (ACampfireUpgrade* Campfire = Cast<ACampfireUpgrade>(Actor))
+				{
+					RegisterCampfires(Campfire);
+				}
+			}
+		}
+		
+		bDoOnce = true;
 	}
 	bDoOnce = true; 
 }
@@ -128,16 +172,35 @@ void UMapWidget::NativeConstruct()
 void UMapWidget::NativeDestruct()
 {
 
-	for (UPointOfInterestWidget* POI : PointOfInterests)
-	{
-		if (POI)
-		{
-			POI->RemoveFromParent();
-		}
-	}
-	PointOfInterests.Empty();
-
 	bCanDrag = false;
 	Super::NativeDestruct();
 	
+}
+
+void UMapWidget::ZoomIn()
+{
+	SetZoom(CurrentScaleValue + ZoomSpeed);
+}
+
+void UMapWidget::ZoomOut()
+{
+	SetZoom(CurrentScaleValue - ZoomSpeed);
+}
+
+void UMapWidget::SetZoom(float NewScale)
+{
+	float OldScale = CurrentScaleValue;
+	CurrentScaleValue = FMath::Clamp(NewScale, MinScale, MaxScale);
+    
+	// Применяем масштаб через Render Transform
+	FWidgetTransform Transform;
+	Transform.Scale = FVector2D(CurrentScaleValue, CurrentScaleValue);
+    
+	// Центрируем масштабирование
+	FVector2D CurrentSize = GetCachedGeometry().GetLocalSize();
+	Transform.Translation.X = (1.0f - CurrentScaleValue) * CurrentSize.X * 0.5f;
+	Transform.Translation.Y = (1.0f - CurrentScaleValue) * CurrentSize.Y * 0.5f;
+    
+	SetRenderTransform(Transform);
+	UpdatePointOfInterests();
 }

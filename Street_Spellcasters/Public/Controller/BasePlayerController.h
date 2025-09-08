@@ -25,6 +25,8 @@ public:
 
 private:
 
+	void DelayedZoneSetup();
+
 	AZoneActor* ZoneActor;
 
 	UFUNCTION()

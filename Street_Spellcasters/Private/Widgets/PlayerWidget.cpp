@@ -2,10 +2,11 @@
 
 
 #include "Widgets/PlayerWidget.h"
-
+#include "Components/StatsComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/HorizontalBox.h"
 #include "Components/ProgressBar.h"
-#include "Components/Slider.h"
+#include "Widgets/LevelUpMenuWidget.h"
 #include "Components/TextBlock.h"
 
 void UPlayerWidget::HealthUpdate(const float CurrentHealth)
@@ -19,6 +20,15 @@ void UPlayerWidget::HealthUpdate(const float CurrentHealth)
 void UPlayerWidget::NativePreConstruct()
 {
 	Super::NativePreConstruct();
+}
+
+void UPlayerWidget::SetStatsComponent(UStatsComponent* StatsComp)
+{
+	if (LevelUpMenu && StatsComp)
+	{
+		LevelUpMenu->SetStatsComponent(StatsComp);
+		LevelUpMenu->UpdateStatsMenu();
+	}
 }
 
 void UPlayerWidget::BackHealthBarUpdate()
@@ -56,7 +66,15 @@ void UPlayerWidget::NativeConstruct()
 	
 	GetWorld()->GetTimerManager().SetTimer(StaminaTimer, this, &UPlayerWidget::BackStaminaUpdate, 0.016667f, true);
 
-	
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+	{
+		if (const APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
+		{
+			auto* StatsComp = PlayerPawn->FindComponentByClass<UStatsComponent>();
+			SetStatsComponent(StatsComp);
+		}
+	}, 0.1f, false); 
 }
 
 void UPlayerWidget::SoulsPointsUpdate(const int32 CurrentPoints)

@@ -13,34 +13,42 @@ ABasePlayerController::ABasePlayerController()
 
 void ABasePlayerController::OnZoneBeginPlay_Implementation(AZoneActor* ZoneRef)
 {
-	ZoneRef = ZoneActor;
+	ZoneActor = ZoneRef;
+	
 	FTimerHandle SetZoneTimer;
-
-	// Set zone actor
-	APlayerHUD* PlayerHUD = Cast<APlayerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
-	// GetWorldTimerManager().SetTimer(SetZoneTimer, [this, PlayerHUD]
-	// {
-	// 	if (PlayerHUD)
-	// 	{
-	// 		PlayerHUD->MapWidget->MapWidget->SetZoneActor(ZoneActor);
-	// 	}
-	// }, 0.2f, true);
-	if (PlayerHUD)
-	{
-		PlayerHUD->MapWidget->MapWidget->SetZoneActor(ZoneActor);
-	}
-
-
-	// Bind delegate function
-	// ZoneActor->OnZoneInitialized.AddDynamic(this, &ABasePlayerController::OnZoneInit);
-	// ZoneActor->OnZoneShrinking.AddDynamic(this, &ABasePlayerController::OnZoneShrinking);
-	// ZoneActor->OnZoneEnded.AddDynamic(this, &ABasePlayerController::OnZoneEnded);
-	// ZoneActor->OnZonePaused.AddDynamic(this, &ABasePlayerController::OnZonePaused);
+	GetWorld()->GetTimerManager().SetTimer(SetZoneTimer, this, &ABasePlayerController::DelayedZoneSetup, 0.1f, false);
+	
 }
 
 void ABasePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void ABasePlayerController::DelayedZoneSetup()
+{
+	if (!ZoneActor) return;
+    
+	APlayerHUD* PlayerHUD = Cast<APlayerHUD>(GetHUD());
+	if (!PlayerHUD) return;
+    
+	// Ждем создания виджета карты
+	FTimerHandle WidgetCheckTimer;
+	GetWorld()->GetTimerManager().SetTimer(WidgetCheckTimer, 
+		[this, PlayerHUD]()
+		{
+			if (PlayerHUD->MapWidget && PlayerHUD->MapWidget->MapWidget)
+			{
+				PlayerHUD->MapWidget->MapWidget->SetZoneActor(ZoneActor);
+                
+				// Привязываем делегаты
+				// ZoneActor->OnZoneInitialized.AddDynamic(this, &ABasePlayerController::OnZoneInit);
+				// ZoneActor->OnZoneShrinking.AddDynamic(this, &ABasePlayerController::OnZoneShrinking);
+				// ZoneActor->OnZoneEnded.AddDynamic(this, &ABasePlayerController::OnZoneEnded);
+				// ZoneActor->OnZonePaused.AddDynamic(this, &ABasePlayerController::OnZonePaused);
+			}
+		}, 
+		0.1f, false);
 }
 
 void ABasePlayerController::OnZoneInit(float ZoneBeginsIn)

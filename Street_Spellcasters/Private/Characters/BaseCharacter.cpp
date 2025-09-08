@@ -12,7 +12,6 @@
 #include "Animation/AnimInstance.h"
 #include "Widgets/MiniMapWidget.h"
 #include "Components/StatsComponent.h"
-#include "Components/CombatComponent.h"
 #include "Projectile/BaseProjectile.h"
 #include "Characters/BaseEnemyCharacter.h"
 #include "Kismet/GameplayStatics.h"
