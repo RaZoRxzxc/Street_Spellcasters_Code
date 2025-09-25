@@ -41,7 +41,7 @@ void APlayerHUD::BeginPlay()
 			}
 		}
 	}
-
+	
 	if (MapWidgetClass)
 	{
 		MapWidget = CreateWidget<UMiniMapWidget>(GetWorld(), MapWidgetClass);
@@ -49,13 +49,7 @@ void APlayerHUD::BeginPlay()
 		{
 			MapWidget->AddToViewport();
 			MapWidget->SetVisibility(ESlateVisibility::Collapsed);
-
-			// UGameplayStatics::GetAllActorsOfClass(GetWorld(), Enemyclass, EnemyArray);
-			// for (AActor* Enemy : EnemyArray)
-			// {
-			// 	MapWidget->MapWidget->AddNewPOI(Enemy, EnemyImage, FVector2D(50, 50), FLinearColor::Red);
-			// 	UE_LOG(LogTemp, Warning, TEXT("Enemy added"))
-			// }
+			
 		}
 	}
 }
@@ -160,17 +154,7 @@ void APlayerHUD::ToggleMap()
 {
 	APlayerController* PC = GetOwningPlayerController();
 	if (!PC) return;
-
-	if (!MapWidget && MapWidgetClass)
-	{
-		MapWidget = CreateWidget<UMiniMapWidget>(PC, MapWidgetClass);
-		if (MapWidget)
-		{
-			MapWidget->AddToViewport();
-			MapWidget->SetVisibility(ESlateVisibility::Collapsed);
-		}
-	}
-
+	
 	if (MapWidget)
 	{
 		bIsMapOpen = !bIsMapOpen;

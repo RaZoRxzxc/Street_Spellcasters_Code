@@ -40,8 +40,7 @@ void ABasePlayerController::DelayedZoneSetup()
 			if (PlayerHUD->MapWidget && PlayerHUD->MapWidget->MapWidget)
 			{
 				PlayerHUD->MapWidget->MapWidget->SetZoneActor(ZoneActor);
-                
-				// Привязываем делегаты
+				
 				// ZoneActor->OnZoneInitialized.AddDynamic(this, &ABasePlayerController::OnZoneInit);
 				// ZoneActor->OnZoneShrinking.AddDynamic(this, &ABasePlayerController::OnZoneShrinking);
 				// ZoneActor->OnZoneEnded.AddDynamic(this, &ABasePlayerController::OnZoneEnded);

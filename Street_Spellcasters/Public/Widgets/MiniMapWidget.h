@@ -20,12 +20,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UMapWidget* MapWidget;
 
-	UFUNCTION(BlueprintCallable)
-	void ZoomInMap();
-    
-	UFUNCTION(BlueprintCallable)
-	void ZoomOutMap();
-
 protected:
 	virtual void NativeConstruct() override;
 };

@@ -4,17 +4,15 @@
 #include "Widgets/MapWidget.h"
 #include "Actors/CampfireUpgrade.h"
 #include "Components/Image.h"
-#include "Styling/SlateTypes.h"
 #include "Styling/SlateColor.h"
 #include "Components/Overlay.h"
-#include "Components/ScaleBox.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Widgets/PointOfInterestWidget.h"
 
 
 void UMapWidget::UpdatePointOfInterests()
 {
-
 	float LocalSize = GetCachedGeometry().GetLocalSize().X;
     
 	if (LocalSize > 0)
@@ -26,10 +24,10 @@ void UMapWidget::UpdatePointOfInterests()
 				FVector PlayerLoc = PointOfInterest->OwnerActor->GetActorLocation();
 	
 				auto OverlaySlot = PointOfInterest->OverlaySlot;
+
+				float NormalizedX = ((PlayerLoc.X * -1.0f) / MapWidth) * LocalSize;
+				float NormalizedY = (PlayerLoc.Y / MapWidth) * LocalSize;
 				
-				float NormalizedX = ((PlayerLoc.X * -1.0f) / MapWidth) * LocalSize / CurrentScaleValue;
-				float NormalizedY = (PlayerLoc.Y / MapWidth) * LocalSize / CurrentScaleValue;
-                
 				OverlaySlot->SetPadding(FMargin(NormalizedY, NormalizedX, 0, 0));
                 
 				auto ActorRot = PointOfInterest->OwnerActor->GetActorRotation().Yaw;
@@ -37,6 +35,7 @@ void UMapWidget::UpdatePointOfInterests()
 			}
 		}
 	}
+	
 }
 
 void UMapWidget::RegisterCampfires(ACampfireUpgrade* Campfire)
@@ -81,13 +80,98 @@ void UMapWidget::AddNewPOI(AActor* TrackActor, UTexture2D* Image, FVector2D Imag
 
 FReply UMapWidget::NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-	if (InMouseEvent.GetWheelDelta() > 0)
+	 FWidgetTransform CurrentTransform = GetRenderTransform();
+    float OldScale = CurrentTransform.Scale.X;
+	
+    float WheelDelta = InMouseEvent.GetWheelDelta();
+    float NewScaleValue = OldScale + (WheelDelta * ZoomSpeed);
+    NewScaleValue = FMath::Clamp(NewScaleValue, MinScale, MaxScale);
+    
+    if (bZoomToCursor && FMath::Abs(NewScaleValue - OldScale) > 0.001f)
+    {
+        FVector2D LocalCursorPos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
+        FVector2D WidgetSize = InGeometry.GetLocalSize();
+    	
+        FVector2D NormalizedCursorPos = (LocalCursorPos / WidgetSize) - FVector2D(0.5f, 0.5f);
+    	
+        FVector2D OffsetChange = NormalizedCursorPos * (NewScaleValue - OldScale) * WidgetSize;
+    	
+        FVector2D NewTranslation = CurrentTransform.Translation - OffsetChange;
+    	
+        float MaxOffsetX = (WidgetSize.X * (NewScaleValue - 1.0f)) / 2.0f;
+        float MaxOffsetY = (WidgetSize.Y * (NewScaleValue - 1.0f)) / 2.0f;
+        
+        NewTranslation.X = FMath::Clamp(NewTranslation.X, -MaxOffsetX, MaxOffsetX);
+        NewTranslation.Y = FMath::Clamp(NewTranslation.Y, -MaxOffsetY, MaxOffsetY);
+        
+        SetRenderTransform(FWidgetTransform(NewTranslation, FVector2D(NewScaleValue, NewScaleValue), CurrentTransform.Shear, CurrentTransform.Angle));
+    }
+    else
+    {
+        SetRenderScale(FVector2D(NewScaleValue, NewScaleValue));
+    	
+        if (NewScaleValue <= 1.0f + KINDA_SMALL_NUMBER)
+        {
+            SetRenderTranslation(FVector2D::ZeroVector);
+        }
+        else
+        {
+            FVector2D WidgetSize = GetCachedGeometry().GetLocalSize();
+            float MaxOffsetX = (WidgetSize.X * (NewScaleValue - 1.0f)) / 2.0f;
+            float MaxOffsetY = (WidgetSize.Y * (NewScaleValue - 1.0f)) / 2.0f;
+            
+            FVector2D CurrentTranslation = CurrentTransform.Translation;
+            CurrentTranslation.X = FMath::Clamp(CurrentTranslation.X, -MaxOffsetX, MaxOffsetX);
+            CurrentTranslation.Y = FMath::Clamp(CurrentTranslation.Y, -MaxOffsetY, MaxOffsetY);
+            
+            SetRenderTranslation(CurrentTranslation);
+        }
+    }
+    
+    return FReply::Handled();
+
+}
+
+FReply UMapWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	LastKnowLoc = InMouseEvent.GetScreenSpacePosition();
+	auto LMB = InMouseEvent.GetEffectingButton();
+	bCanDrag = UKismetMathLibrary::BooleanAND(LMB == EKeys::LeftMouseButton, GetCurrentScale() > 1.0f);
+	
+	return FReply::Handled();
+	
+}
+
+FReply UMapWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	if (InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
 	{
-		ZoomIn();
+		bCanDrag = false;
 	}
-	else
+	
+	return FReply::Handled();
+}
+
+FReply UMapWidget::NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	if (bCanDrag)
 	{
-		ZoomOut();
+		FVector2D NewValue = InMouseEvent.GetScreenSpacePosition() - LastKnowLoc;
+		
+		FWidgetTransform CurrentTransform = GetRenderTransform();
+		FVector2D NewTranslation = CurrentTransform.Translation + NewValue;
+		
+		FVector2D WidgetSize = GetCachedGeometry().GetLocalSize();
+		float CurrentScale = GetCurrentScale();
+        
+		float MaxOffsetX = (WidgetSize.X * (CurrentScale - 1.0f)) / 2.0f;
+		float MaxOffsetY = (WidgetSize.Y * (CurrentScale - 1.0f)) / 2.0f;
+        
+		NewTranslation.X = FMath::Clamp(NewTranslation.X, -MaxOffsetX, MaxOffsetX);
+		NewTranslation.Y = FMath::Clamp(NewTranslation.Y, -MaxOffsetY, MaxOffsetY);
+        
+		SetRenderTranslation(NewTranslation);
+		LastKnowLoc = InMouseEvent.GetScreenSpacePosition();
 	}
     
 	return FReply::Handled();
@@ -95,22 +179,15 @@ FReply UMapWidget::NativeOnMouseWheel(const FGeometry& InGeometry, const FPointe
 
 float UMapWidget::GetCurrentScale()
 {
-	// FWidgetTransform WidgetTransform = GetRenderTransform();
-	//
-	// FVector2D CurrentScale = WidgetTransform.Scale;
-	// float X = CurrentScale.X;
-	// return X;
-	return CurrentScaleValue;
-	
+	return GetRenderTransform().Scale.X;
 }
 
 float UMapWidget::GetClampValue()
 {
 	auto Size = GetCachedGeometry().GetLocalSize().X * 0.9f;
 	auto Scale = GetCurrentScale() - 1.0f;
-	
+    
 	return Size * Scale;
-
 }
 
 void UMapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -119,7 +196,6 @@ void UMapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 	UpdatePointOfInterests();
 
-	UE_LOG(LogTemp, Warning, TEXT("Tick"));
 }
 
 void UMapWidget::NativeConstruct()
@@ -140,7 +216,7 @@ void UMapWidget::NativeConstruct()
 			SlateBrush.ImageSize = TextureSize;
 			MapImage->SetBrush(SlateBrush);
 		}
-
+		
 		if (GetOwningPlayer())
 		{
 			OwnerPawn = GetOwningPlayer()->GetPawn();
@@ -163,10 +239,9 @@ void UMapWidget::NativeConstruct()
 				}
 			}
 		}
-		
-		bDoOnce = true;
 	}
-	bDoOnce = true; 
+	bDoOnce = true;
+	
 }
 
 void UMapWidget::NativeDestruct()
@@ -177,30 +252,3 @@ void UMapWidget::NativeDestruct()
 	
 }
 
-void UMapWidget::ZoomIn()
-{
-	SetZoom(CurrentScaleValue + ZoomSpeed);
-}
-
-void UMapWidget::ZoomOut()
-{
-	SetZoom(CurrentScaleValue - ZoomSpeed);
-}
-
-void UMapWidget::SetZoom(float NewScale)
-{
-	float OldScale = CurrentScaleValue;
-	CurrentScaleValue = FMath::Clamp(NewScale, MinScale, MaxScale);
-    
-	// Применяем масштаб через Render Transform
-	FWidgetTransform Transform;
-	Transform.Scale = FVector2D(CurrentScaleValue, CurrentScaleValue);
-    
-	// Центрируем масштабирование
-	FVector2D CurrentSize = GetCachedGeometry().GetLocalSize();
-	Transform.Translation.X = (1.0f - CurrentScaleValue) * CurrentSize.X * 0.5f;
-	Transform.Translation.Y = (1.0f - CurrentScaleValue) * CurrentSize.Y * 0.5f;
-    
-	SetRenderTransform(Transform);
-	UpdatePointOfInterests();
-}

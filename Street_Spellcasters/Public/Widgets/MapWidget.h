@@ -52,6 +52,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FVector2D InitialSize;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FVector2D ZoomPivot;
+        
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Zoom")
+	bool bZoomToCursor = true;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AZoneActor* ZoneRef;
@@ -99,12 +105,21 @@ protected:
 
 	UFUNCTION()
 	void UpdateCampfires();
-	
+
 public:
 	UFUNCTION()
 	void AddNewPOI(AActor* TrackActor, UTexture2D* Image, FVector2D ImageSize, FLinearColor SpecifiedColor);
 
 	virtual FReply NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+
+	virtual FReply NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+
+	virtual FReply NativeOnKeyUp(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override { return FReply::Unhandled(); }
+	virtual FReply NativeOnPreviewKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override {return FReply::Unhandled(); }
+	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override { return FReply::Unhandled(); }
 	
 	UFUNCTION()
 	AZoneActor* SetZoneActor(AZoneActor* Zone) { return ZoneRef = Zone;}
@@ -122,13 +137,5 @@ public:
 
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
-
-	UFUNCTION(BlueprintCallable)
-	void ZoomIn();
-    
-	UFUNCTION(BlueprintCallable)
-	void ZoomOut();
-    
-	UFUNCTION(BlueprintCallable)
-	void SetZoom(float NewScale);
+	
 };

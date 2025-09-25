@@ -99,7 +99,7 @@ void ACampfireUpgrade::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor*
 			}
 		}
 
-		//Player->SetCanShowLevelUpPanel(false);
+		Player->SetCanShowLevelUpPanel(false);
 	}
 }
 

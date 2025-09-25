@@ -4,6 +4,7 @@
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "UserSettings/EnhancedInputUserSettings.h"
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
@@ -66,16 +67,6 @@ void ABaseCharacter::BeginPlay()
 	StatsComponent->OnDeath.AddDynamic(this, &ABaseCharacter::isDead);
 	
 	SpawnWeapon();
-
-	// if (MapWidgetClass)
-	// {
-	// 	MapWidget = CreateWidget<UMiniMapWidget>(GetWorld(), MapWidgetClass);
-	// 	if (MapWidget)
-	// 	{
-	// 		MapWidget->AddToViewport();
-	// 		MapWidget->SetVisibility(ESlateVisibility::Collapsed);
-	// 	}
-	// }
 	
 }
 
@@ -108,23 +99,6 @@ void ABaseCharacter::ToggleMap()
 	}
 }
 
-void ABaseCharacter::ZoomInMap()
-{
-	if (MapWidget && bIsMapOpen)
-	{
-	}
-}
-
-void ABaseCharacter::ZoomOutMap()
-{
-	if (MapWidget && bIsMapOpen)
-	{
-		
-	}
-}
-
-
-
 void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -134,6 +108,15 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 	{
 		Subsystem->AddMappingContext(MappingContext, 0);
+
+		UEnhancedInputUserSettings* UserSettings = Subsystem->GetUserSettings();
+		if (UserSettings)
+		{
+			if (!UserSettings->IsMappingContextRegistered(MappingContext))
+			{
+				UserSettings->RegisterInputMappingContext(MappingContext);
+			}
+		}
 	}
 
 	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
@@ -171,10 +154,6 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 		// Open map
 		EnhancedInput->BindAction(MapAction, ETriggerEvent::Started, this, &ABaseCharacter::ToggleMap);
-
-		// Zooming map
-		EnhancedInput->BindAction(ZoomInAction, ETriggerEvent::Started, this, &ABaseCharacter::ZoomInMap);
-		EnhancedInput->BindAction(ZoomOutAction, ETriggerEvent::Started, this, &ABaseCharacter::ZoomOutMap);
 	}
 }
 

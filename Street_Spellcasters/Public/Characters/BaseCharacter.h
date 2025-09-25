@@ -317,12 +317,6 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void ToggleMap();
 
-	UFUNCTION()
-	void ZoomInMap();
-
-	UFUNCTION()
-	void ZoomOutMap();
-
 	UFUNCTION(BlueprintCallable)
 	bool IsMapOpen() const { return bIsMapOpen; }
 	
