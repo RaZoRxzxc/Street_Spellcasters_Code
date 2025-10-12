@@ -13,12 +13,24 @@ class STREET_SPELLCASTERS_API UMyGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 public:
+	virtual void Init() override;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Character Selection")
 	FCharacterStruct SelectedCharacter;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Data")
+	UDataTable* CharacterDataTable;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Character Selection")
+	FName LastSelectedCharacterID;
 	
 	UFUNCTION(BlueprintCallable, Category = "Character Selection")
-	void SetSelectedCharacter(const FCharacterStruct& CharacterStruct) { SelectedCharacter = CharacterStruct; }
+	void SetSelectedCharacter(const FCharacterStruct& CharacterStruct);
 	
 	UFUNCTION(BlueprintCallable, Category = "Character Selection")
-	FCharacterStruct GetSelecterdCharacter() const { return SelectedCharacter; }
+	FCharacterStruct GetSelectedCharacter() const { return SelectedCharacter; }
+
+	void LoadCharacterSelection();
+private:
+	void SaveCharacterSelection();
 };

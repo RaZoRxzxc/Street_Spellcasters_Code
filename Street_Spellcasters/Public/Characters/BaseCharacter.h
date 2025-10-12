@@ -270,17 +270,19 @@ public:
 protected:
 
 	UFUNCTION(BlueprintCallable)
-	void TryOpenLevelUpPanel();
-	
+	void Interact();
+
 public:
-	UFUNCTION(BlueprintCallable)
-	void SetCanShowLevelUpPanel(bool bCanShow);
-	
-	UFUNCTION(BlueprintCallable)
-	bool CanLevelUp() const { return bCanShowLevelPanel; }
-	
-private:
-	bool bCanShowLevelPanel = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+	AActor* CurrentInteractable;
+// 	UFUNCTION(BlueprintCallable)
+// 	void SetCanShowLevelUpPanel(bool bCanShow);
+// 	
+// 	UFUNCTION(BlueprintCallable)
+// 	bool CanLevelUp() const { return bCanShowLevelPanel; }
+// 	
+// private:
+// 	bool bCanShowLevelPanel = false;
 	
 	// Perception stimulus source 
 	class UAIPerceptionStimuliSourceComponent* PerceptionStimuliSource;

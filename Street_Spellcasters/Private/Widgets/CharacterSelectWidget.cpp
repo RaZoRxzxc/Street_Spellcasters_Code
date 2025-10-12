@@ -3,12 +3,15 @@
 
 #include "Widgets/CharacterSelectWidget.h"
 #include "Widgets/MenuWidget.h"
-#include "Actors/MenuCameraActor.h"
-#include "Characters/LobbyCharacter.h"
+#include "Widgets/CharacterButtonWidget.h"
+#include "Characters/BaseCharacter.h"
 #include "Structs/CharacterStruct.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Components/UniformGridPanel.h"
+#include "Components/UniformGridSlot.h"
+#include "GameFramework/PlayerStart.h"
 #include "GameInstance/MyGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Widgets/MenuHUD.h"
@@ -17,61 +20,79 @@ void UCharacterSelectWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (PreviousButton)
-	{
-		PreviousButton->OnClicked.AddDynamic(this, &UCharacterSelectWidget::OnPreviousClicked);
-	}
-	
-	if (NextButton)
-	{
-		NextButton->OnClicked.AddDynamic(this, &UCharacterSelectWidget::OnNextClicked);
-	}
-
-	if (SelectButton)
-	{
-		SelectButton->OnClicked.AddDynamic(this, &UCharacterSelectWidget::OnSelectClicked);
-	}
-
 	if (BackButton)
-	{
-		BackButton->OnClicked.AddDynamic(this, &UCharacterSelectWidget::ReturnToMenuCamera);
-	}
+		BackButton->OnClicked.AddDynamic(this, &UCharacterSelectWidget::ReturnToMenu);
 
 	LoadCharacterData();
-	CurrentCharacterIndex = 0;
-	UpdateCharacterDisplay();
-	SwitchToLobbyCharacterCamera();
+	CreateCharacterButtons();
+
+	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetGameInstance());
+	if (GameInstance && GameInstance->GetSelectedCharacter().Character)
+	{
+		UpdateCharacterDisplay(GameInstance->GetSelectedCharacter());
+	}
+	else if (AvailableCharacters.Num() > 0)
+	{
+		UpdateCharacterDisplay(AvailableCharacters[0]);
+	}
 }
 
-void UCharacterSelectWidget::OnPreviousClicked()
+void UCharacterSelectWidget::OnCharacterSelected(const FCharacterStruct& SelectedCharacter)
 {
-	if (AvailableCharacters.Num() == 0) return;
-
-	CurrentCharacterIndex = (CurrentCharacterIndex - 1 + AvailableCharacters.Num()) % AvailableCharacters.Num();
-	UpdateCharacterDisplay();
-
-	SwitchToLobbyCharacterCamera();
-}
-
-void UCharacterSelectWidget::OnNextClicked()
-{
-	if (AvailableCharacters.Num() == 0) return;
-
-	CurrentCharacterIndex = (CurrentCharacterIndex + 1) % AvailableCharacters.Num();
-	UpdateCharacterDisplay();
-
-	SwitchToLobbyCharacterCamera();
-}
-
-void UCharacterSelectWidget::OnSelectClicked()
-{
-	if (AvailableCharacters.Num() == 0) return;
+	CurrentCharacter = SelectedCharacter;
+	UpdateCharacterDisplay(SelectedCharacter);
 
 	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetGameInstance());
 	if (GameInstance)
 	{
-		GameInstance->SetSelectedCharacter(AvailableCharacters[CurrentCharacterIndex]);
-		UE_LOG(LogTemp, Warning, TEXT("Character selected: %s"), *AvailableCharacters[CurrentCharacterIndex].CharacterName.ToString());
+		GameInstance->SetSelectedCharacter(SelectedCharacter);
+	}
+
+	SpawnAndPossessCharacter(SelectedCharacter);
+}
+
+void UCharacterSelectWidget::SpawnAndPossessCharacter(const FCharacterStruct& Character)
+{
+	APlayerController* PC = GetOwningPlayer();
+	if (!PC || !Character.Character) return;
+
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	APawn* CurrentPawn = PC->GetPawn();
+	FVector SpawnLocation = FVector::ZeroVector;
+	FRotator SpawnRotation = FRotator::ZeroRotator;
+
+	if (CurrentPawn)
+	{
+		ABaseCharacter* PlayerCharacter = Cast<ABaseCharacter>(CurrentPawn);
+		if (PlayerCharacter && PlayerCharacter->CurrentWeapon)
+		{
+			PlayerCharacter->CurrentWeapon->Destroy();
+			PlayerCharacter->CurrentWeapon = nullptr;
+		}
+		
+		SpawnLocation = CurrentPawn->GetActorLocation();
+		SpawnRotation = CurrentPawn->GetActorRotation();
+
+		CurrentPawn->Destroy();
+	}
+	else
+	{
+		AActor* PlayerStart = UGameplayStatics::GetActorOfClass(World, APlayerStart::StaticClass());
+		if (PlayerStart)
+		{
+			SpawnLocation = PlayerStart->GetActorLocation();
+			SpawnRotation = PlayerStart->GetActorRotation();
+		}
+	}
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	APawn* NewCharacter = World->SpawnActor<APawn>(Character.Character, SpawnLocation, SpawnRotation, SpawnParams);
+	if (NewCharacter)
+	{
+		PC->Possess(NewCharacter);
 	}
 }
 
@@ -90,68 +111,61 @@ void UCharacterSelectWidget::LoadCharacterData()
 	}
 }
 
-void UCharacterSelectWidget::UpdateCharacterDisplay()
+void UCharacterSelectWidget::CreateCharacterButtons()
 {
-	if (AvailableCharacters.Num() == 0) return;
+	if (!CharacterGridPanel || !CharacterButtonClass) return;
 
-	const FCharacterStruct& CurrentCharacter = AvailableCharacters[CurrentCharacterIndex];
+	CharacterGridPanel->ClearChildren();
 
-	if (CharacterNameText)
+	const int32 Columns = 3;
+	int32 Row = 0;
+	int32 Column = 0;
+
+	for (int32 i = 0; i < AvailableCharacters.Num(); i++)
 	{
-		CharacterNameText->SetText(CurrentCharacter.CharacterName);
-	}
-
-	if (CharacterClassText)
-	{
-		CharacterClassText->SetText(CurrentCharacter.CharacterClass);
-	}
-
-	if (CharacterDescriptionText)
-	{
-		CharacterDescriptionText->SetText(CurrentCharacter.CharacterDescription);
-	}
-
-	if (CharacterIcon && CurrentCharacter.CharacterIcon)
-	{
-		CharacterIcon->SetBrushFromTexture(CurrentCharacter.CharacterIcon);
-	}
-}
-
-void UCharacterSelectWidget::SwitchToLobbyCharacterCamera()
-{
-	if (AvailableCharacters.Num() == 0) return;
-
-	APlayerController* PC = GetOwningPlayer();
-	if (!PC) return;
-
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALobbyCharacter::StaticClass(), FoundActors);
-
-	for (AActor* Actor : FoundActors)
-	{
-		ALobbyCharacter* LobbyCharacter = Cast<ALobbyCharacter>(Actor);
-		if (LobbyCharacter && LobbyCharacter->GetClass() == AvailableCharacters[CurrentCharacterIndex].LobbyCharacter)
+		UCharacterButtonWidget* CharacterButton = CreateWidget<UCharacterButtonWidget>(this, CharacterButtonClass);
+		if (CharacterButton)
 		{
-			PC->SetViewTargetWithBlend(LobbyCharacter, 1.0f);
-			break;
-		}
-	}
-}
+			CharacterButton->InitializeCharacter(AvailableCharacters[i]);
+			CharacterButton->OnCharacterSelected.AddDynamic(this, &UCharacterSelectWidget::OnCharacterSelected);
 
-void UCharacterSelectWidget::ReturnToMenuCamera()
-{
-	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
-	{
-		AActor* MenuCamera = UGameplayStatics::GetActorOfClass(GetWorld(), AMenuCameraActor::StaticClass());
-		if (MenuCamera)
-		{
-			PC->SetViewTargetWithBlend(MenuCamera, 1.0f);
-
-			if (AMenuHUD* HUD = Cast<AMenuHUD>(GetWorld()->GetFirstPlayerController()->GetHUD()))
+			UUniformGridSlot* GridSlot = CharacterGridPanel->AddChildToUniformGrid(CharacterButton);
+			if (GridSlot)
 			{
-				HUD->ShowMenuWidget();
+				GridSlot->SetRow(Row);
+				GridSlot->SetColumn(Column);
+			}
+
+			Column++;
+			if (Column >= Columns)
+			{
+				Column = 0;
+				Row++;
 			}
 		}
+	}
+}
+
+void UCharacterSelectWidget::UpdateCharacterDisplay(const FCharacterStruct& Character)
+{
+	if (CharacterNameText)
+		CharacterNameText->SetText(Character.CharacterName);
+
+	if (CharacterClassText)
+		CharacterClassText->SetText(Character.CharacterClass);
+
+	if (CharacterDescriptionText)
+		CharacterDescriptionText->SetText(Character.CharacterDescription);
+
+	if (CharacterIcon && Character.CharacterIcon)
+		CharacterIcon->SetBrushFromTexture(Character.CharacterIcon);
+}
+
+void UCharacterSelectWidget::ReturnToMenu()
+{
+	if (AMenuHUD* HUD = Cast<AMenuHUD>(GetWorld()->GetFirstPlayerController()->GetHUD()))
+	{
+		HUD->ShowMenuWidget();
 	}
 }
 

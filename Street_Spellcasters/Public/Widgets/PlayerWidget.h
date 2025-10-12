@@ -26,11 +26,17 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LevelUp", meta = (BindWidget))
 	class ULevelUpMenuWidget* LevelUpMenu;
+
+	UFUNCTION()
+	void HideStats();
 protected:
 	UFUNCTION()
-	void SetStatsComponent(UStatsComponent* StatsComp);
+	void SetStatsComponent(class UStatsComponent* StatsComp);
 	
 	FTimerHandle BackHealthTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health", meta = (BindWidget))
+	UHorizontalBox* StatsHorBox;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health", meta = (BindWidget))
 	UProgressBar* BackHealthBar;
@@ -72,8 +78,11 @@ public:
 	UFUNCTION()
 	void SoulsPointsUpdate(const int32 CurrentPoints);
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Souls", meta = (BindWidget))
-	UHorizontalBox* UpgradeHorizontalBox;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level", meta = (BindWidget))
+	UHorizontalBox* InteractHorizontalBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level", meta = (BindWidget))
+	UTextBlock* InteractText;
 	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level", meta = (BindWidget))

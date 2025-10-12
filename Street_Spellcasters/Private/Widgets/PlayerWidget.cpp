@@ -22,7 +22,16 @@ void UPlayerWidget::NativePreConstruct()
 	Super::NativePreConstruct();
 }
 
-void UPlayerWidget::SetStatsComponent(UStatsComponent* StatsComp)
+void UPlayerWidget::HideStats()
+{
+	if (StatsHorBox)
+	{
+		StatsHorBox->SetVisibility(ESlateVisibility::Hidden);
+		SoulsPointsText->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
+void UPlayerWidget::SetStatsComponent(class UStatsComponent* StatsComp)
 {
 	if (LevelUpMenu && StatsComp)
 	{

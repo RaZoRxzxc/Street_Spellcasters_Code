@@ -50,6 +50,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category = "LevelUpMenu", meta = (BindWidget))
 	UTextBlock* NextDamageText;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category = "LevelUpMenu", meta = (BindWidget))
+	UTextBlock* CurrentLevelText;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category = "LevelUpMenu", meta = (BindWidget))
+	UTextBlock* NextLevelText;
+
 	// Upgrade button
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category = "LevelUpMenu", meta = (BindWidget))
 	UButton* UpgradeButton;

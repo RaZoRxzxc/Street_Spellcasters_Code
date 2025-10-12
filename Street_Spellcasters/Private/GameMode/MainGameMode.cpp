@@ -18,7 +18,7 @@ void AMainGameMode::SpawnSelectedCharacter()
 	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetGameInstance());
 	if (!GameInstance) return;
 
-	FCharacterStruct SelectedCharacter = GameInstance->GetSelecterdCharacter();
+	FCharacterStruct SelectedCharacter = GameInstance->GetSelectedCharacter();
 
 	if (SelectedCharacter.Character)
 	{

@@ -12,28 +12,24 @@ class UButton;
 class UTextBlock;
 class UImage;
 class UMenuWidget;
+class UUniformGridPanel;
+class UCharacterButtonWidget;
 
 UCLASS()
 class STREET_SPELLCASTERS_API UCharacterSelectWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
+	
 protected:
 	virtual void NativeConstruct() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Data")
 	UDataTable* CharacterDataTable;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
+	TSubclassOf<UCharacterButtonWidget> CharacterButtonClass;
+
 	FCharacterStruct CharacterStruct;
-
-	UPROPERTY(meta = (BindWidget))
-	UButton* PreviousButton;
-
-	UPROPERTY(meta = (BindWidget))
-	UButton* NextButton;
-
-	UPROPERTY(meta = (BindWidget))
-	UButton* SelectButton;
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* BackButton;
@@ -50,31 +46,26 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UImage* CharacterIcon;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UMenuWidget* MenuWidget;
+	UPROPERTY(meta = (BindWidget))
+	UUniformGridPanel* CharacterGridPanel;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<UMenuWidget> MenuWidgetClass;
-	
 private:
 	UFUNCTION()
-	void OnPreviousClicked();
+	void OnCharacterSelected(const FCharacterStruct& SelectedCharacter);
 
 	UFUNCTION()
-	void OnNextClicked();
-
-	UFUNCTION()
-	void OnSelectClicked();
+	void SpawnAndPossessCharacter(const FCharacterStruct& Character);
 
 	TArray<FCharacterStruct> AvailableCharacters;
-	int32 CurrentCharacterIndex;
+	FCharacterStruct CurrentCharacter;
 
 	void LoadCharacterData();
-	void UpdateCharacterDisplay();
+	void CreateCharacterButtons();
+	void UpdateCharacterDisplay(const FCharacterStruct& Character);
 	
-	void SwitchToLobbyCharacterCamera();
+	//void SwitchToLobbyCharacterCamera(const FCharacterStruct& Character);
 
 public:
 	UFUNCTION()
-	void ReturnToMenuCamera();
+	void ReturnToMenu();
 };

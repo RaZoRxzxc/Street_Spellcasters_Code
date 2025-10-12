@@ -7,6 +7,8 @@
 #include "Widgets/LevelUpMenuWidget.h"
 #include "Components/HorizontalBox.h"
 #include "Components/StatsComponent.h"
+#include "Components/TextBlock.h"
+#include "Widgets/CharacterSelectWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Widgets/PlayerWidget.h"
 
@@ -71,6 +73,7 @@ void APlayerHUD::UpdateStamina(float CurrentStamina)
 	}
 }
 
+// Update souls amount when player killed an enemy
 void APlayerHUD::UpdateSoulsPoints(int32 CurrentPoints)
 {
 	if (PlayerWidget)
@@ -79,27 +82,40 @@ void APlayerHUD::UpdateSoulsPoints(int32 CurrentPoints)
 	}
 }
 
-void APlayerHUD::ShowUpgradeBox()
+// Hide health, stamina progress bars, level text and amount flasks
+void APlayerHUD::HideStatsBox()
 {
 	if (PlayerWidget)
 	{
-		PlayerWidget->UpgradeHorizontalBox->SetVisibility(ESlateVisibility::Visible);
+		PlayerWidget->HideStats();
 	}
 }
 
-void APlayerHUD::HideUpgradeBox()
+// Show interact box 
+void APlayerHUD::ShowInteractBox(FText NewUpgradeText)
 {
 	if (PlayerWidget)
 	{
-		PlayerWidget->UpgradeHorizontalBox->SetVisibility(ESlateVisibility::Collapsed);
+		PlayerWidget->InteractHorizontalBox->SetVisibility(ESlateVisibility::Visible);
+		PlayerWidget->InteractText->SetText(NewUpgradeText);
 	}
 }
 
+// Hide interact box
+void APlayerHUD::HideInteractBox()
+{
+	if (PlayerWidget)
+	{
+		PlayerWidget->InteractHorizontalBox->SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
+
+// Show level up menu 
 void APlayerHUD::ShowLevelUpMenu()
 {
 	if (PlayerWidget)
 	{
-		HideUpgradeBox();
+		HideInteractBox();
 		PlayerWidget->LevelUpMenu->SetVisibility(ESlateVisibility::Visible);
 
 		APlayerController* PC = GetOwningPlayerController();
@@ -118,7 +134,6 @@ void APlayerHUD::HideLevelUpMenu()
 	if (PlayerWidget)
 	{
 		PlayerWidget->LevelUpMenu->SetVisibility(ESlateVisibility::Collapsed);
-		ShowUpgradeBox();
 
 		APlayerController* PC = GetOwningPlayerController();
 		if (PC)
@@ -171,6 +186,75 @@ void APlayerHUD::ToggleMap()
 			MapWidget->SetVisibility(ESlateVisibility::Collapsed);
 			PC->SetInputMode(FInputModeGameOnly());
 			PC->bShowMouseCursor = false;
+		}
+	}
+}
+
+void APlayerHUD::ShowCharacterSelectMenu()
+{
+	if (CharSelectWidgetClass)
+	{
+		CharacterSelectWidget = CreateWidget<UCharacterSelectWidget>(GetWorld(), CharSelectWidgetClass);
+		if (CharacterSelectWidget)
+		{
+			CharacterSelectWidget->AddToViewport();
+
+			//HideCharacterSelectMenu();
+			APlayerController* PC = GetOwningPlayerController();
+			if (PC)
+			{
+				PC->bShowMouseCursor = true;
+				PC->SetInputMode(FInputModeGameAndUI());
+			}
+		}
+	}
+}
+
+void APlayerHUD::HideCharacterSelectMenu()
+{
+	if (IsCharSelectMenuOpen())
+	{
+		CharacterSelectWidget->RemoveFromParent();
+		
+		APlayerController* PC = GetOwningPlayerController();
+		if (PC)
+		{
+			PC->bShowMouseCursor = false;
+			PC->SetInputMode(FInputModeGameOnly());
+		}
+	}
+}
+
+void APlayerHUD::ShowSelectMapWidget()
+{
+	if (SelectMapWidgetClass)
+	{
+		SelectMapWidget = CreateWidget<USelectMapWidget>(GetWorld(), SelectMapWidgetClass);
+		if (SelectMapWidget)
+		{
+			SelectMapWidget->AddToViewport();
+
+			APlayerController* PC = GetOwningPlayerController();
+			if (PC)
+			{
+				PC->bShowMouseCursor = true;
+				PC->SetInputMode(FInputModeGameAndUI());
+			}
+		}
+	}
+}
+
+void APlayerHUD::HideSelectMapWidget()
+{
+	if (IsMapSelectMenuOpen())
+	{
+		SelectMapWidget->RemoveFromParent();
+		
+		APlayerController* PC = GetOwningPlayerController();
+		if (PC)
+		{
+			PC->bShowMouseCursor = false;
+			PC->SetInputMode(FInputModeGameOnly());
 		}
 	}
 }

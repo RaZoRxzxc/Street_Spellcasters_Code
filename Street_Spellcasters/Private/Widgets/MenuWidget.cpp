@@ -23,10 +23,7 @@ void UMenuWidget::NativeConstruct()
 
 void UMenuWidget::StartGame()
 {
-	if (AMenuHUD* HUD = Cast<AMenuHUD>(GetWorld()->GetFirstPlayerController()->GetHUD()))
-	{
-		HUD->ShowCharacterSelectMenu();
-	}
+	
 }
 
 void UMenuWidget::OpenSettingsMenu()

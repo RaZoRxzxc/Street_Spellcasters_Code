@@ -3,28 +3,8 @@
 #include "Widgets/MenuHUD.h"
 #include "Widgets/MenuWidget.h"
 #include "Widgets/CharacterSelectWidget.h"
+#include "Widgets/SelectMapWidget.h"
 
-// Show character select menu
-void AMenuHUD::ShowCharacterSelectMenu()
-{
-	if (CharSelectWidgetClass)
-	{
-		CharacterSelectWidget = CreateWidget<UCharacterSelectWidget>(GetWorld(), CharSelectWidgetClass);
-		if (CharacterSelectWidget)
-		{
-			HideMenuWidget();
-			CharacterSelectWidget->AddToViewport();
-		}
-	}
-}
-
-void AMenuHUD::HideCharacterSelectMenu()
-{
-	if (CharacterSelectWidget->IsVisible())
-	{
-		CharacterSelectWidget->RemoveFromParent();
-	}
-}
 
 // Show menu widget
 void AMenuHUD::ShowMenuWidget()
@@ -34,7 +14,6 @@ void AMenuHUD::ShowMenuWidget()
 		MenuWidget = CreateWidget<UMenuWidget>(GetWorld(), MenuWidgetClass);
 		if (MenuWidget)
 		{
-			HideCharacterSelectMenu();
 			MenuWidget->AddToViewport();
 		}
 	}
@@ -45,5 +24,25 @@ void AMenuHUD::HideMenuWidget()
 	if (MenuWidget->IsVisible())
 	{
 		MenuWidget->RemoveFromParent();
+	}
+}
+
+void AMenuHUD::ShowMapSelectWidget()
+{
+	if (SelectMapWidgetClass)
+	{
+		SelectMapWidget = CreateWidget<USelectMapWidget>(GetWorld(), SelectMapWidgetClass);
+		if (SelectMapWidget)
+		{
+			SelectMapWidget->AddToViewport();
+		}
+	}
+}
+
+void AMenuHUD::HideMapSelectWidget()
+{
+	if (SelectMapWidget->IsVisible())
+	{
+		SelectMapWidget->RemoveFromParent();
 	}
 }

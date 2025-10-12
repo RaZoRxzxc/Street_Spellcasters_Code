@@ -27,6 +27,28 @@ ACampfireUpgrade::ACampfireUpgrade()
 	
 }
 
+void ACampfireUpgrade::InteractWith_Implementation(ACharacter* Character)
+{
+	IInteractInterface::InteractWith_Implementation(Character);
+
+	APlayerHUD* PlayerHUD = Cast<APlayerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+	if (!PlayerHUD) return;
+	
+	if (PlayerHUD->IsLevelMenuOpen())
+	{
+		PlayerHUD->HideLevelUpMenu();
+		
+		PlayerHUD->ShowInteractBox(ActorName);
+		return;
+	}
+
+	//ABaseCharacter* Player = Cast<ABaseCharacter>(Character);
+	if (CanLevelUp())
+	{
+		PlayerHUD->ShowLevelUpMenu();
+	}
+}
+
 // Called when the game starts or when spawned
 void ACampfireUpgrade::BeginPlay()
 {
@@ -58,18 +80,20 @@ void ACampfireUpgrade::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActo
 	
 	if (Player && !PlayerHUD->IsLevelMenuOpen()) 
 	{
+		Player->CurrentInteractable = this;
+		
 		if (PlayerHUD)
 		{
-			if (!Player->CanLevelUp())
+			if (!CanLevelUp())
 			{
 				// Show interact horizontal box when player overlap collision
-				PlayerHUD->ShowUpgradeBox();
+				PlayerHUD->ShowInteractBox(ActorName);
 			}
 			
 			// Show upgrade widget
-			Player->SetCanShowLevelUpPanel(true);
+			SetCanShowLevelUpPanel(true);
 		}
-
+	
 		// Restore stats to max
 		Player->StatsComponent->RestoreStatsToMax();
 
@@ -85,22 +109,28 @@ void ACampfireUpgrade::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor*
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	ABaseCharacter* Player = Cast<ABaseCharacter>(OtherActor);
-	if (Player)
-	{
+	
 		if (APlayerHUD* PlayerHUD = Cast<APlayerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD()))
 		{
+			Player->CurrentInteractable = nullptr;
+			
 			// Hide interact horizontal box
-			PlayerHUD->HideUpgradeBox();
+			PlayerHUD->HideInteractBox();
 
 			// If the level up menu is open, it will close when the player exits the collision.
 			if(PlayerHUD->IsLevelMenuOpen())
 			{
 				PlayerHUD->HideLevelUpMenu();
+				PlayerHUD->ShowInteractBox(ActorName);
 			}
 		}
 
-		Player->SetCanShowLevelUpPanel(false);
-	}
+		SetCanShowLevelUpPanel(false);
+}
+
+void ACampfireUpgrade::SetCanShowLevelUpPanel(bool bCanShow)
+{
+	bCanShowLevelPanel = bCanShow;
 }
 
 

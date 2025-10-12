@@ -15,16 +15,19 @@ void ULevelUpMenuWidget::UpdateStatsMenu()
 	CurrentHealthText->SetText(FText::FromString(FString::Printf(TEXT("Health: %.0f"), StatsComponent->MaxHealth)));
 	CurrentStaminaText->SetText(FText::FromString(FString::Printf(TEXT("Stamina: %.0f"), StatsComponent->MaxStamina)));
 	CurrentDamageText->SetText(FText::FromString(FString::Printf(TEXT("Damage: %.0f"), StatsComponent->Weapon->Damage)));
+	CurrentLevelText->SetText(FText::FromString(FString::Printf(TEXT("Level: %.0d"), StatsComponent->Level)));
 
 	// Next stats
 	const float NextHealth = StatsComponent->MaxHealth + 50.0f;
 	const float NextStamina = StatsComponent->MaxStamina + 25.0f;
 	const float NextDamage = StatsComponent->Weapon->Damage + 10.0f;
+	const float NextLevel = StatsComponent->Level + 1.0f;
 
 	// Set next stats after level up
-	NextHealthText->SetText(FText::FromString(FString::Printf(TEXT("-> %.0f"), NextHealth)));
-	NextStaminaText->SetText(FText::FromString(FString::Printf(TEXT("-> %.0f"), NextStamina)));
-	NextDamageText->SetText(FText::FromString(FString::Printf(TEXT("-> %.0f"), NextDamage)));
+	NextHealthText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), NextHealth)));
+	NextStaminaText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), NextStamina)));
+	NextDamageText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), NextDamage)));
+	NextLevelText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), NextLevel)));
 
 	// setting the required number of souls to level up
 	SoulsToUpgradeText->SetText(FText::FromString(FString::Printf(TEXT("Souls needed: %d"), StatsComponent->SoulsToNextLevel)));

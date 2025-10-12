@@ -167,7 +167,6 @@ FVector2D AZoneActor::GetZoneRandomLocation()
 	float ZRadiusN;
 	GetZoneRadius(ZRadius, ZRadiusN);
 
-	// Генерация случайных координат в пределах радиуса
 	float RandomX = UKismetMathLibrary::RandomFloatInRange(-ZRadius, ZRadius);
 	float RandomY = UKismetMathLibrary::RandomFloatInRange(-ZRadius, ZRadius);
     

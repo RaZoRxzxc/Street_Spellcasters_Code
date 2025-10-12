@@ -6,6 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "LobbyGameMode.generated.h"
 
+class UDataTable;
+
 UCLASS()
 class STREET_SPELLCASTERS_API ALobbyGameMode : public AGameModeBase
 {
@@ -14,5 +16,11 @@ class STREET_SPELLCASTERS_API ALobbyGameMode : public AGameModeBase
 protected:
 
 	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintCallable)
+	void SpawnSelectedCharacter();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Data")
+	UDataTable* CharacterDataTable;
 	
 };

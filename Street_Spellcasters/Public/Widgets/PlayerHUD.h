@@ -3,11 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CharacterSelectWidget.h"
+#include "SelectMapWidget.h"
 #include "GameFramework/HUD.h"
 #include "PlayerHUD.generated.h"
 
 class UPlayerWidget;
 class ULevelUpMenuWidget;
+class UCharacterSelectWidget;
 class ABaseEnemyCharacter;
 
 UCLASS()
@@ -41,10 +44,13 @@ private:
 public:
 
 	UFUNCTION()
-	void ShowUpgradeBox();
+	void HideStatsBox();
 	
 	UFUNCTION()
-	void HideUpgradeBox();
+	void ShowInteractBox(FText NewUpgradeText);
+	
+	UFUNCTION()
+	void HideInteractBox();
 
 protected:
 
@@ -69,14 +75,14 @@ protected:
 
 	UFUNCTION()
 	void UpdateFlasksAmount(int32 NewFlasks);
-
-	bool bIsMapOpen = false;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Enemy")
 	TArray<AActor*> EnemyArray;
 	
 public:
 
+	// ====================== Mini map widget ======================
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UMiniMapWidget* MapWidget;
 
@@ -85,4 +91,47 @@ public:
 
 	UFUNCTION()
 	void ToggleMap();
+
+protected:
+	bool bIsMapOpen = false;
+	
+	// ===================== Character select widget ===================
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UCharacterSelectWidget* CharacterSelectWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UCharacterSelectWidget> CharSelectWidgetClass;
+
+public:
+
+	UFUNCTION()
+	bool IsCharSelectMenuOpen() const { return CharacterSelectWidget && CharacterSelectWidget->IsInViewport(); }
+	
+	UFUNCTION()
+	void ShowCharacterSelectMenu();
+
+	UFUNCTION()
+	void HideCharacterSelectMenu();
+
+protected:
+
+	// ================== Map select widget =====================
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class USelectMapWidget* SelectMapWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<USelectMapWidget> SelectMapWidgetClass;
+
+public:
+
+	UFUNCTION()
+	bool IsMapSelectMenuOpen() const { return SelectMapWidget && SelectMapWidget->IsInViewport(); }
+
+	UFUNCTION()
+	void ShowSelectMapWidget();
+
+	UFUNCTION()
+	void HideSelectMapWidget(); 
+	
 };

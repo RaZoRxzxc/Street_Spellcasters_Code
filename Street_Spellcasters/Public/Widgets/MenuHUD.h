@@ -8,6 +8,7 @@
 
 class UMenuWidget;
 class UCharacterSelectWidget;
+class USelectMapWidget;
 
 UCLASS()
 class STREET_SPELLCASTERS_API AMenuHUD : public AHUD
@@ -21,24 +22,24 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UMenuWidget> MenuWidgetClass;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UCharacterSelectWidget* CharacterSelectWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<UCharacterSelectWidget> CharSelectWidgetClass;
+	USelectMapWidget* SelectMapWidget;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<USelectMapWidget> SelectMapWidgetClass;
 	
 public:
-	
-	UFUNCTION()
-	void ShowCharacterSelectMenu();
-
-	UFUNCTION()
-	void HideCharacterSelectMenu();
 
 	UFUNCTION()
 	void ShowMenuWidget();
 
 	UFUNCTION()
 	void HideMenuWidget();
+
+	UFUNCTION()
+	void ShowMapSelectWidget();
+
+	UFUNCTION()
+	void HideMapSelectWidget();
 };

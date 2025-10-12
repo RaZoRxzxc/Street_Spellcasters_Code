@@ -18,6 +18,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Weapon/BaseWeapon.h"
 #include "Widgets/PlayerHUD.h"
+#include "Interface/InteractInterface.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -147,7 +148,7 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInput->BindAction(BlockAction, ETriggerEvent::Completed, this, &ABaseCharacter::EndBlocking);
 
 		// Open level menu
-		EnhancedInput->BindAction(InteractAction, ETriggerEvent::Started, this, &ABaseCharacter::TryOpenLevelUpPanel);
+		EnhancedInput->BindAction(InteractAction, ETriggerEvent::Started, this, &ABaseCharacter::Interact);
 
 		// Healing 
 		EnhancedInput->BindAction(HealAction, ETriggerEvent::Started, this, &ABaseCharacter::Heal);
@@ -530,25 +531,16 @@ void ABaseCharacter::SpawnWeapon()
 	}
 }
 
-void ABaseCharacter::SetCanShowLevelUpPanel(bool bCanShow)
+void ABaseCharacter::Interact()
 {
-	bCanShowLevelPanel = bCanShow;
-}
-
-void ABaseCharacter::TryOpenLevelUpPanel()
-{
-	APlayerHUD* PlayerHUD = Cast<APlayerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
-	if (!PlayerHUD) return;
-	
-	if (PlayerHUD->IsLevelMenuOpen())
+	if (CurrentInteractable && CurrentInteractable->GetClass()->ImplementsInterface(UInteractInterface::StaticClass()))
 	{
-		PlayerHUD->HideLevelUpMenu();
-		return;
+		IInteractInterface::Execute_InteractWith(CurrentInteractable, this);
+		UE_LOG(LogTemp, Log, TEXT("Interacted with %s"), *CurrentInteractable->GetName());
 	}
-
-	if (CanLevelUp())
+	else
 	{
-		PlayerHUD->ShowLevelUpMenu();
+		UE_LOG(LogTemp, Log, TEXT("No interactable object nearby"));
 	}
 }
 
