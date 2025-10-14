@@ -17,7 +17,7 @@ EBTNodeResult::Type UBTT_FindRandomLocation::ExecuteTask(UBehaviorTreeComponent&
 	// Get AI Controllers
 	if (AEnemyAIController* const cont = Cast<AEnemyAIController>(Comp.GetAIOwner()))
 	{
-		if (auto* const NPC = cont->GetPawn())
+		if (auto const NPC = cont->GetPawn())
 		{
 			auto const Origin = NPC->GetActorLocation();
 

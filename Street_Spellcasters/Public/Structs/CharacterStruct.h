@@ -31,4 +31,13 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<class ALobbyCharacter> LobbyCharacter;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float BaseHealth;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float BaseStamina;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float BaseDamage;
 };

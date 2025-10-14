@@ -63,8 +63,7 @@ void ULevelUpMenuWidget::UpdateDamage(float Damage)
 void ULevelUpMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-
+	
 	// Install on click function to button
 	if (UpgradeButton)
 	{

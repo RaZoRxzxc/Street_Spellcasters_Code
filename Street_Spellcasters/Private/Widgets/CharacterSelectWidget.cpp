@@ -6,7 +6,7 @@
 #include "Widgets/CharacterButtonWidget.h"
 #include "Characters/BaseCharacter.h"
 #include "Structs/CharacterStruct.h"
-#include "Components/Button.h"
+#include "Components/ProgressBar.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/UniformGridPanel.h"
@@ -20,20 +20,19 @@ void UCharacterSelectWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (BackButton)
-		BackButton->OnClicked.AddDynamic(this, &UCharacterSelectWidget::ReturnToMenu);
-
 	LoadCharacterData();
 	CreateCharacterButtons();
 
 	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetGameInstance());
 	if (GameInstance && GameInstance->GetSelectedCharacter().Character)
 	{
-		UpdateCharacterDisplay(GameInstance->GetSelectedCharacter());
+		CurrentCharacter = GameInstance->GetSelectedCharacter();
+		UpdateCharacterDisplay(CurrentCharacter);
 	}
 	else if (AvailableCharacters.Num() > 0)
 	{
-		UpdateCharacterDisplay(AvailableCharacters[0]);
+		CurrentCharacter = AvailableCharacters[0];
+		UpdateCharacterDisplay(CurrentCharacter);
 	}
 }
 
@@ -49,6 +48,25 @@ void UCharacterSelectWidget::OnCharacterSelected(const FCharacterStruct& Selecte
 	}
 
 	SpawnAndPossessCharacter(SelectedCharacter);
+}
+
+void UCharacterSelectWidget::OnCharacterHovered(const FCharacterStruct& HoveredCharacter)
+{
+	bIsHovering = true;
+	CurrentlyHoveredCharacter = HoveredCharacter;
+	UpdateCharacterDisplay(HoveredCharacter);
+}
+
+void UCharacterSelectWidget::OnCharacterUnhovered(const FCharacterStruct& UnhoveredCharacter)
+{
+	if (CurrentlyHoveredCharacter.CharacterID == UnhoveredCharacter.CharacterID)
+	{
+		bIsHovering = false;
+		UpdateCharacterDisplay(CurrentCharacter);
+		UE_LOG(LogTemp, Warning, TEXT("Character Unhovered: %s - Returning to selected: %s"), 
+			*UnhoveredCharacter.CharacterName.ToString(), 
+			*CurrentCharacter.CharacterName.ToString());
+	}
 }
 
 void UCharacterSelectWidget::SpawnAndPossessCharacter(const FCharacterStruct& Character)
@@ -128,6 +146,8 @@ void UCharacterSelectWidget::CreateCharacterButtons()
 		{
 			CharacterButton->InitializeCharacter(AvailableCharacters[i]);
 			CharacterButton->OnCharacterSelected.AddDynamic(this, &UCharacterSelectWidget::OnCharacterSelected);
+			CharacterButton->OnCharacterHovered.AddDynamic(this, &UCharacterSelectWidget::OnCharacterHovered);
+			CharacterButton->OnCharacterUnhovered.AddDynamic(this, &UCharacterSelectWidget::OnCharacterUnhovered);
 
 			UUniformGridSlot* GridSlot = CharacterGridPanel->AddChildToUniformGrid(CharacterButton);
 			if (GridSlot)
@@ -159,13 +179,46 @@ void UCharacterSelectWidget::UpdateCharacterDisplay(const FCharacterStruct& Char
 
 	if (CharacterIcon && Character.CharacterIcon)
 		CharacterIcon->SetBrushFromTexture(Character.CharacterIcon);
+
+	UpdateCharacterStats(Character);
 }
 
-void UCharacterSelectWidget::ReturnToMenu()
+void UCharacterSelectWidget::UpdateCharacterStats(const FCharacterStruct& Character)
 {
-	if (AMenuHUD* HUD = Cast<AMenuHUD>(GetWorld()->GetFirstPlayerController()->GetHUD()))
+	if (HealthProgressBar)
 	{
-		HUD->ShowMenuWidget();
+		float HealthPercent = NormalizeStatValue(Character.BaseHealth, MaxHealthValue);
+		HealthProgressBar->SetPercent(HealthPercent);
+	}
+
+	if (StaminaProgressBar)
+	{
+		float StaminaPercent = NormalizeStatValue(Character.BaseStamina, MaxStaminaValue);
+		StaminaProgressBar->SetPercent(StaminaPercent);
+	}
+
+	if (DamageProgressBar)
+	{
+		float DamagePercent = NormalizeStatValue(Character.BaseDamage, MaxDamageValue);
+		DamageProgressBar->SetPercent(DamagePercent);
+	}
+	
+	if (HealthStatText)
+	{
+		FString HealthText = FString::Printf(TEXT("Health: %.0f"), Character.BaseHealth);
+		HealthStatText->SetText(FText::FromString(HealthText));
+	}
+
+	if (StaminaStatText)
+	{
+		FString StaminaText = FString::Printf(TEXT("Stamina: %.0f"), Character.BaseStamina);
+		StaminaStatText->SetText(FText::FromString(StaminaText));
+	}
+
+	if (DamageStatText)
+	{
+		FString DamageText = FString::Printf(TEXT("Damage: %.0f"), Character.BaseDamage);
+		DamageStatText->SetText(FText::FromString(DamageText));
 	}
 }
 

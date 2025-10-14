@@ -63,7 +63,6 @@ void UMyGameInstance::LoadCharacterSelection()
 		GGameIni
 	))
 	{
-		// Ищем персонажа по сохраненному ID
 		TArray<FCharacterStruct*> AllCharacters;
 		CharacterDataTable->GetAllRows<FCharacterStruct>(TEXT(""), AllCharacters);
 

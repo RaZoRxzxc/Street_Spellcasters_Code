@@ -10,9 +10,18 @@ void UCharacterButtonWidget::InitializeCharacter(const FCharacterStruct& NewChar
 {
 	CharacterData = NewCharacterData;
 
-	if (CharacterIconImage && CharacterData.CharacterIcon)
+	if (SelectCharacterButton)
 	{
-		CharacterIconImage->SetBrushFromTexture(CharacterData.CharacterIcon);
+		FButtonStyle ButtonStyle = SelectCharacterButton->GetStyle();
+		
+		if (CharacterData.CharacterIcon)
+		{
+			FSlateBrush NormalBrush = ButtonStyle.Normal;
+			NormalBrush.SetResourceObject(CharacterData.CharacterIcon);
+			ButtonStyle.SetNormal(NormalBrush);
+			ButtonStyle.SetHovered(NormalBrush);
+		}
+		SelectCharacterButton->SetStyle(ButtonStyle);
 	}
 }
 
@@ -21,10 +30,24 @@ void UCharacterButtonWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	if (SelectCharacterButton)
+	{
 		SelectCharacterButton->OnClicked.AddDynamic(this, &UCharacterButtonWidget::OnSelectClicked);
+		SelectCharacterButton->OnHovered.AddDynamic(this, &UCharacterButtonWidget::OnButtonHovered);
+		SelectCharacterButton->OnUnhovered.AddDynamic(this, &UCharacterButtonWidget::OnButtonUnhovered);
+	}
 }
 
 void UCharacterButtonWidget::OnSelectClicked()
 {
 	OnCharacterSelected.Broadcast(CharacterData);
+}
+
+void UCharacterButtonWidget::OnButtonHovered()
+{
+	OnCharacterHovered.Broadcast(CharacterData);
+}
+
+void UCharacterButtonWidget::OnButtonUnhovered()
+{
+	OnCharacterUnhovered.Broadcast(CharacterData);
 }
