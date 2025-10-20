@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "Weapon/BaseWeapon.h"
 #include "Interface/CombatInterface.h"
+#include "Interface/InputHandlerInterface.h"
 #include "BaseCharacter.generated.h"
 
 class UHealthComponent;
@@ -14,9 +15,6 @@ class UInputComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UNiagaraComponent;
-class UInputAction;
-class UInputMappingContext;
-struct FInputActionValue;
 
 
 UENUM(BlueprintType)
@@ -28,7 +26,7 @@ enum class ECharacterType : uint8
 };
 
 UCLASS()
-class STREET_SPELLCASTERS_API ABaseCharacter : public ACharacter, public ICombatInterface
+class STREET_SPELLCASTERS_API ABaseCharacter : public ACharacter, public ICombatInterface, public IInputHandlerInterface
 {
 	GENERATED_BODY()
 
@@ -39,6 +37,22 @@ public:
 	void IsPlayerAttack_Implementation(bool& bIsAttack) override;
 	void isPlayerDead_Implementation(bool& IsDead) override;
 
+	// InputHandlerInterface realization
+	void HandleMove_Implementation(const FInputActionValue& Value) override;
+	void HandleLook_Implementation(const FInputActionValue& Value) override;
+	void HandleJump_Implementation() override;
+	void HandleStopJumping_Implementation() override;
+	void HandleSprintStart_Implementation() override;
+	void HandleSprintStop_Implementation() override;
+	void HandleAttack_Implementation() override;
+	void HandleBlockStart_Implementation() override;
+	void HandleBlockEnd_Implementation() override;
+	void HandleEvade_Implementation(const FInputActionValue& Value) override;
+	void HandleInteract_Implementation() override;
+	void HandleHeal_Implementation() override;
+	void HandleToggleMap_Implementation() override;
+	
+
 	// Spring arm componentw
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* SpringArm;
@@ -47,58 +61,58 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* CameraComp;
 
-	// Jump Input Action
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* JumpAction;
-
-	// Sprint Input Action
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* SprintAction;
-	
-	// Move Input Action
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* MoveAction;
-
-	// Look Input Action
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* LookAction;
-
-	// Attack Input Action
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* AttackAction;
-
-	// Block Input Action
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* BlockAction;
-
-	// Evade Input Action
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* EvadeAction;
-
-	// Interact Input Action
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* InteractAction;
-
-	// Heal Input Action
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* HealAction;
-
-	// Map Input Action
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* MapAction;
-
-	// Zoom in Input Action
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* ZoomInAction;
-
-	// Zoom out Input Action
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* ZoomOutAction;
-	
-	// Mapping context
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputMappingContext* MappingContext;
-	
+	// // Jump Input Action
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	// UInputAction* JumpAction;
+	//
+	// // Sprint Input Action
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	// UInputAction* SprintAction;
+	//
+	// // Move Input Action
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	// UInputAction* MoveAction;
+	//
+	// // Look Input Action
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	// UInputAction* LookAction;
+	//
+	// // Attack Input Action
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	// UInputAction* AttackAction;
+	//
+	// // Block Input Action
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	// UInputAction* BlockAction;
+	//
+	// // Evade Input Action
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	// UInputAction* EvadeAction;
+	//
+	// // Interact Input Action
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	// UInputAction* InteractAction;
+	//
+	// // Heal Input Action
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	// UInputAction* HealAction;
+	//
+	// // Map Input Action
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	// UInputAction* MapAction;
+	//
+	// // Zoom in Input Action
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	// UInputAction* ZoomInAction;
+	//
+	// // Zoom out Input Action
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	// UInputAction* ZoomOutAction;
+	//
+	// // Mapping context
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	// UInputMappingContext* MappingContext;
+	//
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Sprint, meta=(AllowPrivateAccess = "true"))
 	bool bIsSprint = false;
 
@@ -143,7 +157,18 @@ private:
 	
 	/** Sprint functions */
 	void StartSprint();
+
+protected:
+	// Base sensitivity values
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	float BaseMouseSensitivity = 1.0f;
+    
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	float BaseControllerSensitivity = 1.0f;
 public:
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void UpdateInputSensitivity();
+	
 	void StopSprint();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sprint")
@@ -153,8 +178,8 @@ public:
 	float SprintSpeed;
 	
 private:
-	/** Setup input function */
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	// /** Setup input function */
+	// virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	/** Jumping function */
 	void Jump() override;

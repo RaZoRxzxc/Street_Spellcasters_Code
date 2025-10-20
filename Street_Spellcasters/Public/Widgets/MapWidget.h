@@ -37,7 +37,7 @@ public:
 	UTexture2D* MapTexture;
 	
 protected:
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MinScale = 1.0f;
 
@@ -82,6 +82,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UImage* MapImage;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Map Data")
+	UDataTable* MapsDataTable;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName CurrentLevelName;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* PlayerImage;
 
@@ -106,7 +112,16 @@ protected:
 	UFUNCTION()
 	void UpdateCampfires();
 
+	UFUNCTION()
+	void UpdateMapForCurrentLevel();
+
 public:
+	UFUNCTION(BlueprintCallable)
+	void SetMapsDataTable(UDataTable* NewDataTable);
+
+	UFUNCTION(BlueprintCallable)
+	void ChangeMapForLevel(FName LevelName);
+	
 	UFUNCTION()
 	void AddNewPOI(AActor* TrackActor, UTexture2D* Image, FVector2D ImageSize, FLinearColor SpecifiedColor);
 

@@ -100,63 +100,63 @@ void ABaseCharacter::ToggleMap()
 	}
 }
 
-void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-	{
-		Subsystem->AddMappingContext(MappingContext, 0);
-
-		UEnhancedInputUserSettings* UserSettings = Subsystem->GetUserSettings();
-		if (UserSettings)
-		{
-			if (!UserSettings->IsMappingContextRegistered(MappingContext))
-			{
-				UserSettings->RegisterInputMappingContext(MappingContext);
-			}
-		}
-	}
-
-	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
-	{
-		// Jumping
-		EnhancedInput->BindAction(JumpAction, ETriggerEvent::Started, this, &ABaseCharacter::Jump);
-		EnhancedInput->BindAction(JumpAction, ETriggerEvent::Completed, this, &ABaseCharacter::StopJumping);
-
-		// Moving
-		EnhancedInput->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Move);
-
-		// Looking
-		EnhancedInput->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Look);
-
-		// Attacking
-		EnhancedInput->BindAction(AttackAction, ETriggerEvent::Started, this, &ABaseCharacter::Attack);
-
-		// Evading
-		EnhancedInput->BindAction(EvadeAction, ETriggerEvent::Started, this, &ABaseCharacter::Evade);
-		EnhancedInput->BindAction(EvadeAction, ETriggerEvent::Completed, this, &ABaseCharacter::Evade);
-		
-		// Sprinting
-		EnhancedInput->BindAction(SprintAction, ETriggerEvent::Triggered, this, &ABaseCharacter::StartSprint);
-		EnhancedInput->BindAction(SprintAction, ETriggerEvent::Completed, this, &ABaseCharacter::StopSprint);
-
-		// Blocking
-		EnhancedInput->BindAction(BlockAction, ETriggerEvent::Triggered, this, &ABaseCharacter::StartBlocking);
-		EnhancedInput->BindAction(BlockAction, ETriggerEvent::Completed, this, &ABaseCharacter::EndBlocking);
-
-		// Open level menu
-		EnhancedInput->BindAction(InteractAction, ETriggerEvent::Started, this, &ABaseCharacter::Interact);
-
-		// Healing 
-		EnhancedInput->BindAction(HealAction, ETriggerEvent::Started, this, &ABaseCharacter::Heal);
-
-		// Open map
-		EnhancedInput->BindAction(MapAction, ETriggerEvent::Started, this, &ABaseCharacter::ToggleMap);
-	}
-}
+// void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+// {
+// 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+//
+// 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+//
+// 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+// 	{
+// 		Subsystem->AddMappingContext(MappingContext, 0);
+//
+// 		UEnhancedInputUserSettings* UserSettings = Subsystem->GetUserSettings();
+// 		if (UserSettings)
+// 		{
+// 			if (!UserSettings->IsMappingContextRegistered(MappingContext))
+// 			{
+// 				UserSettings->RegisterInputMappingContext(MappingContext);
+// 			}
+// 		}
+// 	}
+//
+// 	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+// 	{
+// 		// Jumping
+// 		EnhancedInput->BindAction(JumpAction, ETriggerEvent::Started, this, &ABaseCharacter::Jump);
+// 		EnhancedInput->BindAction(JumpAction, ETriggerEvent::Completed, this, &ABaseCharacter::StopJumping);
+//
+// 		// Moving
+// 		EnhancedInput->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Move);
+//
+// 		// Looking
+// 		EnhancedInput->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Look);
+//
+// 		// Attacking
+// 		EnhancedInput->BindAction(AttackAction, ETriggerEvent::Started, this, &ABaseCharacter::Attack);
+//
+// 		// Evading
+// 		EnhancedInput->BindAction(EvadeAction, ETriggerEvent::Started, this, &ABaseCharacter::Evade);
+// 		EnhancedInput->BindAction(EvadeAction, ETriggerEvent::Completed, this, &ABaseCharacter::Evade);
+// 		
+// 		// Sprinting
+// 		EnhancedInput->BindAction(SprintAction, ETriggerEvent::Triggered, this, &ABaseCharacter::StartSprint);
+// 		EnhancedInput->BindAction(SprintAction, ETriggerEvent::Completed, this, &ABaseCharacter::StopSprint);
+//
+// 		// Blocking
+// 		EnhancedInput->BindAction(BlockAction, ETriggerEvent::Triggered, this, &ABaseCharacter::StartBlocking);
+// 		EnhancedInput->BindAction(BlockAction, ETriggerEvent::Completed, this, &ABaseCharacter::EndBlocking);
+//
+// 		// Open level menu
+// 		EnhancedInput->BindAction(InteractAction, ETriggerEvent::Started, this, &ABaseCharacter::Interact);
+//
+// 		// Healing 
+// 		EnhancedInput->BindAction(HealAction, ETriggerEvent::Started, this, &ABaseCharacter::Heal);
+//
+// 		// Open map
+// 		EnhancedInput->BindAction(MapAction, ETriggerEvent::Started, this, &ABaseCharacter::ToggleMap);
+// 	}
+// }
 
 void ABaseCharacter::Jump()
 {
@@ -379,11 +379,15 @@ void ABaseCharacter::Move(const FInputActionValue& Value)
 void ABaseCharacter::Look(const FInputActionValue& Value)
 {
 	const FVector2D LookDirection = Value.Get<FVector2D>();
+	
+	float SensitivityMultiplier = 1.0f;
+	if (IConsoleVariable* CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("input.MouseSensitivity")))
+		SensitivityMultiplier = CVar->GetFloat();
 
 	if (Controller != nullptr)
 	{
-		AddControllerYawInput(LookDirection.X);
-		AddControllerPitchInput(LookDirection.Y);
+		AddControllerYawInput(LookDirection.X * SensitivityMultiplier);
+		AddControllerPitchInput(LookDirection.Y * SensitivityMultiplier);
 	}
 }
 
@@ -400,6 +404,18 @@ void ABaseCharacter::StartSprint()
 	{
 		StopSprint();
 	}
+}
+
+void ABaseCharacter::UpdateInputSensitivity()
+{
+	float MouseSensitivityMultiplier = 1.0f;
+	float ControllerSensitivityMultiplier = 1.0f;
+    
+	if (IConsoleVariable* MouseCVar = IConsoleManager::Get().FindConsoleVariable(TEXT("input.MouseSensitivity")))
+		MouseSensitivityMultiplier = MouseCVar->GetFloat();
+        
+	if (IConsoleVariable* ControllerCVar = IConsoleManager::Get().FindConsoleVariable(TEXT("input.ControllerSensitivity")))
+		ControllerSensitivityMultiplier = ControllerCVar->GetFloat();
 }
 
 void ABaseCharacter::StopSprint()
@@ -476,6 +492,84 @@ void ABaseCharacter::IsPlayerAttack_Implementation(bool& bIsAttack)
 void ABaseCharacter::isPlayerDead_Implementation(bool& IsDead)
 {
 	IsDead = bIsDead;
+}
+
+void ABaseCharacter::HandleMove_Implementation(const FInputActionValue& Value)
+{
+	//IInputHandlerInterface::HandleMove_Implementation(Value);
+	Move(Value);
+}
+
+void ABaseCharacter::HandleLook_Implementation(const FInputActionValue& Value)
+{
+	//IInputHandlerInterface::HandleLook_Implementation(Value);
+	Look(Value);
+}
+
+void ABaseCharacter::HandleJump_Implementation()
+{
+	//IInputHandlerInterface::HandleJump_Implementation();
+	Jump();
+}
+
+void ABaseCharacter::HandleStopJumping_Implementation()
+{
+	//IInputHandlerInterface::HandleStopJumping_Implementation();
+	StopJumping();
+}
+
+void ABaseCharacter::HandleSprintStart_Implementation()
+{
+	//IInputHandlerInterface::HandleSprintStart_Implementation();
+	StartSprint();
+}
+
+void ABaseCharacter::HandleSprintStop_Implementation()
+{
+	//IInputHandlerInterface::HandleSprintStop_Implementation();
+	StopSprint();
+}
+
+void ABaseCharacter::HandleAttack_Implementation()
+{
+	//IInputHandlerInterface::HandleAttack_Implementation();
+	Attack();
+}
+
+void ABaseCharacter::HandleBlockStart_Implementation()
+{
+	//IInputHandlerInterface::HandleBlockStart_Implementation();
+	StartBlocking();
+}
+
+void ABaseCharacter::HandleBlockEnd_Implementation()
+{
+	//IInputHandlerInterface::HandleBlockEnd_Implementation();
+	EndBlocking();
+}
+
+void ABaseCharacter::HandleEvade_Implementation(const FInputActionValue& Value)
+{
+	//IInputHandlerInterface::HandleEvade_Implementation(Value);
+	Evade(Value);
+}
+
+void ABaseCharacter::HandleInteract_Implementation()
+{
+	//IInputHandlerInterface::HandleInteract_Implementation();
+	Interact();
+}
+
+void ABaseCharacter::HandleHeal_Implementation()
+{
+	//IInputHandlerInterface::HandleHeal_Implementation();
+	Heal();
+}
+
+void ABaseCharacter::HandleToggleMap_Implementation()
+{
+	//IInputHandlerInterface::HandleToggleMap_Implementation();
+	ToggleMap();
 }
 
 void ABaseCharacter::StartBlocking()

@@ -23,4 +23,13 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FText MapDescription;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* MiniMapImage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MapWidth;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName LevelName;
 };

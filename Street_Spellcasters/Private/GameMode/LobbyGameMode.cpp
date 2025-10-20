@@ -28,23 +28,6 @@ void ALobbyGameMode::BeginPlay()
 			PlayerHUD->HideStatsBox();
 		}
 	}, 0.1f, false);
-	
-	// if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
-	// {
-	// 	AActor* MenuCamera = UGameplayStatics::GetActorOfClass(GetWorld(), AMenuCameraActor::StaticClass());
-	// 	if (MenuCamera)
-	// 	{
-	// 		PC->SetViewTargetWithBlend(MenuCamera, 0.0f);
-	// 		PC->SetInputMode(FInputModeUIOnly());
-	//
-	// 		if (AMenuHUD* HUD = Cast<AMenuHUD>(GetWorld()->GetFirstPlayerController()->GetHUD()))
-	// 		{
-	// 			HUD->ShowMenuWidget();
-	// 		}
-	// 		
-	// 	
-	// 	}
-	// }
 }
 
 void ALobbyGameMode::SpawnSelectedCharacter()

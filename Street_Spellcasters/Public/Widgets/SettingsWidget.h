@@ -7,15 +7,84 @@
 #include "SettingsWidget.generated.h"
 
 class UEnhancedInputUserSettings;
-
+class UVerticalBox;
+class UGfxSettingsWidget;
+class USettingsEntryWidget;
+class UButton;
+class UBaseSaveGame;
+class USlider;
 
 UCLASS()
 class STREET_SPELLCASTERS_API USettingsWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
-public:
-    virtual void NativeConstruct() override;
 
 protected:
+	virtual void NativeConstruct() override;
+
+	UFUNCTION()
+	void OnDisplaySettingsClicked();
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USettingsEntryWidget* SettingsEntryWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<USettingsEntryWidget> SettingsEntryWidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= Sounds)
+	USoundMix* DefaultSoundMix;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= Sounds)
+	USoundClass* MasterSoundClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= Sounds)
+	USoundClass* MusicSoundClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= Sounds)
+	USoundClass* SFXSoundClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= Sounds)
+	USoundClass* VoiceSoundClass;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UBaseSaveGame> SaveGameObject;
+private:
+	
+	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* VideoSettingsVB;
+	
+	UPROPERTY(meta = (BindWidget))
+    UVerticalBox* AudioSettingsVB;
+    	
+   	UPROPERTY(meta = (BindWidget))
+    UVerticalBox* InputSettingsVB;
+
+	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* SensitivityBox;
+
+	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* MovementBox;
+
+	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* InteractBox;
+
+	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* CombatBox;
+	
+	void RegisterCVars();
+	
+	void LoadSettings(const FString& SlotName, bool bIsAudio);
+	void SaveSettings(const FString& SlotName, bool bIsAudio);
+	void ApplyAudioSettings(UBaseSaveGame* SaveGame);
+	void ApplyInputSettings();
+	
+	UFUNCTION()
+	void OnSliderValueChanged(float Value, USoundClass* InSoundClass, const FString& CVarName);
+	
+	void CreateSettingsWidgets();
+	void AddDisplayModeSetting();
+	void AddResolutionSetting();
+	void AddQualitySetting(const FText& DisplayName, const FString& CVarName);
+	void AddSliderSetting(UVerticalBox* TargetVerticalBox, const FText& DisplayName, const FString& CVarName = "");
+	void AddKeyBindingSetting(UVerticalBox* TargetVerticalBox, const FText& DisplayName);
 };

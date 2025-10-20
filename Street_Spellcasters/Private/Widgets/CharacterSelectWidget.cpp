@@ -40,7 +40,7 @@ void UCharacterSelectWidget::OnCharacterSelected(const FCharacterStruct& Selecte
 {
 	CurrentCharacter = SelectedCharacter;
 	UpdateCharacterDisplay(SelectedCharacter);
-
+	
 	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetGameInstance());
 	if (GameInstance)
 	{
@@ -106,7 +106,7 @@ void UCharacterSelectWidget::SpawnAndPossessCharacter(const FCharacterStruct& Ch
 	}
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
+	
 	APawn* NewCharacter = World->SpawnActor<APawn>(Character.Character, SpawnLocation, SpawnRotation, SpawnParams);
 	if (NewCharacter)
 	{

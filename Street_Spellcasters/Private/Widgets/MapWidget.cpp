@@ -8,6 +8,7 @@
 #include "Components/Overlay.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Structs/MapsStruct.h"
 #include "Widgets/PointOfInterestWidget.h"
 
 
@@ -54,6 +55,107 @@ void UMapWidget::RegisterCampfires(ACampfireUpgrade* Campfire)
 void UMapWidget::UpdateCampfires()
 {
 	UpdatePointOfInterests();
+}
+
+
+void UMapWidget::UpdateMapForCurrentLevel()
+{
+	if (!GetWorld() || !MapsDataTable) 
+        {
+            UE_LOG(LogTemp, Warning, TEXT("World or MapsDataTable is null"));
+            return;
+        }
+    
+        FString FullLevelName = GetWorld()->GetMapName();
+        FString LevelName = FPackageName::GetShortName(FullLevelName);
+        CurrentLevelName = FName(LevelName);
+        UE_LOG(LogTemp, Log, TEXT("Current Level Name: %s"), *LevelName);
+    
+        TArray<FMapsStruct*> AllMaps;
+        MapsDataTable->GetAllRows<FMapsStruct>(TEXT(""), AllMaps);
+    
+        bool bFound = false;
+        for (FMapsStruct* MapData : AllMaps)
+        {
+            if (MapData && MapData->LevelName == CurrentLevelName)
+            {
+                UE_LOG(LogTemp, Log, TEXT("Found map data for level: %s"), *CurrentLevelName.ToString());
+                bFound = true;
+                if (MapData->MiniMapImage && MapImage)
+                {
+                    MapTexture = MapData->MiniMapImage;
+                    FVector2D TextureSize = FVector2D(MapTexture->GetSizeX(), MapTexture->GetSizeY());
+                    UE_LOG(LogTemp, Log, TEXT("Setting map texture, Size: %s"), *TextureSize.ToString());
+    
+                    FSlateBrush SlateBrush;
+                    SlateBrush.SetResourceObject(MapTexture);
+                    SlateBrush.ImageSize = TextureSize;
+                    MapImage->SetBrush(SlateBrush);
+                }
+                MapWidth = MapData->MapWidth;
+                SetRenderTransform(FWidgetTransform(FVector2D::ZeroVector, FVector2D(1.0f, 1.0f), FVector2D::ZeroVector, 0.0f));
+                break;
+            }
+        }
+    
+        if (!bFound)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("No map data found for level: %s"), *CurrentLevelName.ToString());
+        }
+}
+
+void UMapWidget::SetMapsDataTable(UDataTable* NewDataTable)
+{
+	MapsDataTable = NewDataTable;
+	if (MapsDataTable && GetWorld())
+	{
+		UpdateMapForCurrentLevel();
+	}
+}
+
+void UMapWidget::ChangeMapForLevel(FName LevelName)
+{
+	if (!MapsDataTable) return;
+
+	FMapsStruct* MapData = MapsDataTable->FindRow<FMapsStruct>(LevelName, TEXT(""));
+	if (MapData)
+	{
+		CurrentLevelName = LevelName;
+
+		if (MapData->MiniMapImage && MapImage)
+		{
+			MapTexture = MapData->MiniMapImage;
+			FVector2D TextureSize = FVector2D(MapTexture->GetSizeX(), MapTexture->GetSizeY());
+
+			FSlateBrush SlateBrush;
+			SlateBrush.SetResourceObject(MapTexture);
+			SlateBrush.ImageSize = TextureSize;
+			MapImage->SetBrush(SlateBrush);
+		}
+
+		MapWidth = MapData->MapWidth;
+
+		SetRenderTransform(FWidgetTransform(FVector2D::ZeroVector, FVector2D(1.0f, 1.0f), FVector2D::ZeroVector, 0.0f));
+
+		if(OwnerPawn && PlayerImage)
+		{
+			AddNewPOI(OwnerPawn, PlayerImage, FVector2D(24, 24), FLinearColor::Green);
+		}
+
+		if (GetWorld())
+		{
+			TArray<AActor*> CampfireActors;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACampfireUpgrade::StaticClass(), CampfireActors);
+
+			for (AActor* Actor : CampfireActors)
+			{
+				if (ACampfireUpgrade* Campfire = Cast<ACampfireUpgrade>(Actor))
+				{
+					RegisterCampfires(Campfire);
+				}
+			}
+		}
+	}
 }
 
 void UMapWidget::AddNewPOI(AActor* TrackActor, UTexture2D* Image, FVector2D ImageSize, FLinearColor SpecifiedColor)
@@ -193,7 +295,19 @@ float UMapWidget::GetClampValue()
 void UMapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-
+	
+	if (GetWorld())
+	{
+		FString CurrentLevel = GetWorld()->GetMapName();
+		FString ShortLevelName = FPackageName::GetShortName(CurrentLevel);
+        
+		if (CurrentLevelName != FName(ShortLevelName))
+		{
+			UE_LOG(LogTemp, Log, TEXT("Level changed to: %s"), *ShortLevelName);
+			UpdateMapForCurrentLevel();
+		}
+	}
+	
 	UpdatePointOfInterests();
 
 }
@@ -203,20 +317,17 @@ void UMapWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	bCanDrag = false;
-	
+    
 	if (!bDoOnce)
 	{
 		InitialSize = GetDesiredSize();
-		if (MapTexture && MapImage)
-		{
-			FVector2D TextureSize = FVector2D(MapTexture->GetSizeX(), MapTexture->GetSizeY());
-            
-			FSlateBrush SlateBrush;
-			SlateBrush.SetResourceObject(MapTexture);
-			SlateBrush.ImageSize = TextureSize;
-			MapImage->SetBrush(SlateBrush);
-		}
 		
+		if (GetWorld())
+		{
+			FName CurrentLevel = FName(GetWorld()->GetMapName());
+			UpdateMapForCurrentLevel();
+		}
+        
 		if (GetOwningPlayer())
 		{
 			OwnerPawn = GetOwningPlayer()->GetPawn();
@@ -251,4 +362,3 @@ void UMapWidget::NativeDestruct()
 	Super::NativeDestruct();
 	
 }
-

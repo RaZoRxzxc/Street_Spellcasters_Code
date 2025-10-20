@@ -18,20 +18,18 @@ class STREET_SPELLCASTERS_API UMenuWidget : public UUserWidget
 protected:
 
 	virtual void NativeConstruct() override;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UButton* PlayButton;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UButton* SettingsButton;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UButton* ExitButton;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* NameText;
 
-public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName StartLevelName;
+
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
+	UWidgetAnimation* Fade;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Map Data")
+	UDataTable* MapsDataTable;
 	
 	UFUNCTION(BlueprintCallable)
 	void StartGame();
@@ -41,4 +39,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ExitGame();
+
+private:
+	
+
+	UFUNCTION()
+	void SelectMap(FName MapRowName);
 };
