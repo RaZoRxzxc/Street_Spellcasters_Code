@@ -32,4 +32,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName LevelName;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsLobby;
 };

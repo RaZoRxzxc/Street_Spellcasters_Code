@@ -39,6 +39,9 @@ protected:
 	
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* MapName;
+	
+	UPROPERTY(meta = (BindWidget))
+	UImage* MapImage;
 
 private:
 

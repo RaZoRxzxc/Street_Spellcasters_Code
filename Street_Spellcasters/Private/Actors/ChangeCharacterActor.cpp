@@ -35,6 +35,7 @@ void AChangeCharacterActor::InteractWith_Implementation(ACharacter* Character)
 	if (CanChangeCharacter())
 	{
 		PlayerHUD->ShowCharacterSelectMenu();
+		PlayerHUD->HideInteractBox();
 	}
 }
 
@@ -82,7 +83,6 @@ void AChangeCharacterActor::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AA
 			if (PlayerHUD->IsCharSelectMenuOpen())
 			{
 				PlayerHUD->HideCharacterSelectMenu();
-				PlayerHUD->ShowInteractBox(ActorName);
 			}
 				
 			SetCanShowCharSelectMenu(false);

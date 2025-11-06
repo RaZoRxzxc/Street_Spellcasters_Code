@@ -23,8 +23,7 @@ enum class ESettingWidgetType : uint8
 	DropDown,
 	SingleButton,
 	DoubleButton,
-	Slider,
-	InputKeySelector
+	Slider
 };
 
 UENUM(BlueprintType)
@@ -35,7 +34,6 @@ enum class EDisplaySettingType : uint8
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnSliderValueChanged, float, Volume, USoundClass*, SoundClass, const FString&, CVarName);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnKeySelectedDelegate, FKey, NewKey, UInputAction*, InputAction);
 UCLASS()
 class STREET_SPELLCASTERS_API USettingsEntryWidget : public UUserWidget
 {
@@ -53,13 +51,14 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USoundClass* AssociatedSoundClass;
-
-	UPROPERTY(BlueprintAssignable, Category = "Settings")
-	FOnKeySelectedDelegate OnKeySelectedDelegate;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Settings")
 	FOnSliderValueChanged OnSliderValueChangedDelegate;
 protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UInputMappingContext* MappingContext;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UInputAction* AssociatedInputAction;
 	
@@ -79,9 +78,6 @@ protected:
 
     UFUNCTION()
     void OnSliderValueChanged(float Value);
-
-    UFUNCTION()
-    void OnKeySelected(FInputChord SelectedKey);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* SettingNameText;
@@ -109,12 +105,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	USlider* SettingSlider;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UHorizontalBox* InputKeyBox;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UInputKeySelector* KeySelector;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* QualityText;

@@ -82,7 +82,6 @@ void ASelectMapActor::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* 
 			if (PlayerHUD-> IsMapSelectMenuOpen())
 			{
 				PlayerHUD->HideSelectMapWidget();
-				PlayerHUD->ShowInteractBox(ActorName);
 			}
 				
 			SetCanShowMapSelectMenu(false);

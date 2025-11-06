@@ -36,6 +36,12 @@ void UCharacterSelectWidget::NativeConstruct()
 	}
 }
 
+void UCharacterSelectWidget::NativeDestruct()
+{
+	Super::NativeDestruct();
+	UE_LOG(LogTemp, Warning, TEXT("CharacterSelectWidget is being destroyed!"));
+}
+
 void UCharacterSelectWidget::OnCharacterSelected(const FCharacterStruct& SelectedCharacter)
 {
 	CurrentCharacter = SelectedCharacter;
@@ -112,6 +118,7 @@ void UCharacterSelectWidget::SpawnAndPossessCharacter(const FCharacterStruct& Ch
 	{
 		PC->Possess(NewCharacter);
 	}
+	
 }
 
 void UCharacterSelectWidget::LoadCharacterData()

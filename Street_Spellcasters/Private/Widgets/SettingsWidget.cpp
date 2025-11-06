@@ -220,25 +220,11 @@ void USettingsWidget::CreateSettingsWidgets()
         AddSliderSetting(AudioSettingsVB, FText::FromString("Voice Volume"), TEXT("au.VoiceVolume"));
     }
 
-    if (InputSettingsVB && SensitivityBox && MovementBox && InteractBox && CombatBox)
+    if (InputSettingsVB && SensitivityBox)
     {
         // Sensitivity Settings
         AddSliderSetting(SensitivityBox, FText::FromString("Mouse Sensitivity"), TEXT("input.MouseSensitivity"));
         AddSliderSetting(SensitivityBox, FText::FromString("Controller Sensitivity"), TEXT("input.ControllerSensitivity"));
-
-        // Key Input Settings
-        AddKeyBindingSetting(MovementBox, FText::FromString("Move Forward"));
-        AddKeyBindingSetting(MovementBox, FText::FromString("Move Backward"));
-        AddKeyBindingSetting(MovementBox, FText::FromString("Move Left"));
-        AddKeyBindingSetting(MovementBox, FText::FromString("Move Right"));
-        AddKeyBindingSetting(MovementBox, FText::FromString("Sprint"));
-        AddKeyBindingSetting(MovementBox, FText::FromString("Jump"));
-        AddKeyBindingSetting(CombatBox, FText::FromString("Attack"));
-        AddKeyBindingSetting(CombatBox, FText::FromString("Evade"));
-        AddKeyBindingSetting(CombatBox, FText::FromString("Block"));
-        AddKeyBindingSetting(CombatBox, FText::FromString("Heal"));
-        AddKeyBindingSetting(InteractBox, FText::FromString("Interact"));
-        AddKeyBindingSetting(InteractBox, FText::FromString("Toggle Map"));
     }
 }
 
@@ -327,18 +313,3 @@ void USettingsWidget::AddSliderSetting(UVerticalBox* TargetVerticalBox, const FT
     }
 }
 
-void USettingsWidget::AddKeyBindingSetting(UVerticalBox* TargetVerticalBox, const FText& DisplayName)
-{
-    if (TargetVerticalBox && SettingsEntryWidgetClass)
-    {
-        USettingsEntryWidget* KeyBindingWidget = CreateWidget<USettingsEntryWidget>(this, SettingsEntryWidgetClass);
-        if (KeyBindingWidget)
-        {
-            KeyBindingWidget->InitializeSetting(
-                DisplayName,
-                ESettingWidgetType::InputKeySelector
-            );
-            TargetVerticalBox->AddChild(KeyBindingWidget);
-        }
-    }
-}

@@ -5,7 +5,7 @@
 #include "Widgets/MiniMapWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Widgets/LevelUpMenuWidget.h"
-#include "Components/HorizontalBox.h"
+#include "Components/SizeBox.h"
 #include "Components/StatsComponent.h"
 #include "Components/TextBlock.h"
 #include "Widgets/CharacterSelectWidget.h"
@@ -96,7 +96,7 @@ void APlayerHUD::ShowInteractBox(FText NewUpgradeText)
 {
 	if (PlayerWidget)
 	{
-		PlayerWidget->InteractHorizontalBox->SetVisibility(ESlateVisibility::Visible);
+		PlayerWidget->InteractBox->SetVisibility(ESlateVisibility::Visible);
 		PlayerWidget->InteractText->SetText(NewUpgradeText);
 	}
 }
@@ -106,7 +106,7 @@ void APlayerHUD::HideInteractBox()
 {
 	if (PlayerWidget)
 	{
-		PlayerWidget->InteractHorizontalBox->SetVisibility(ESlateVisibility::Collapsed);
+		PlayerWidget->InteractBox->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
 
@@ -197,6 +197,7 @@ void APlayerHUD::ShowCharacterSelectMenu()
 		CharacterSelectWidget = CreateWidget<UCharacterSelectWidget>(GetWorld(), CharSelectWidgetClass);
 		if (CharacterSelectWidget)
 		{
+			HideInteractBox();
 			CharacterSelectWidget->AddToViewport();
 
 			//HideCharacterSelectMenu();
@@ -232,6 +233,7 @@ void APlayerHUD::ShowSelectMapWidget()
 		SelectMapWidget = CreateWidget<USelectMapWidget>(GetWorld(), SelectMapWidgetClass);
 		if (SelectMapWidget)
 		{
+			HideInteractBox();
 			SelectMapWidget->AddToViewport();
 
 			APlayerController* PC = GetOwningPlayerController();

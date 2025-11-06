@@ -23,6 +23,7 @@ class STREET_SPELLCASTERS_API UCharacterSelectWidget : public UUserWidget
 	
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Data")
 	UDataTable* CharacterDataTable;

@@ -12,10 +12,10 @@ void ULevelUpMenuWidget::UpdateStatsMenu()
 	if (!StatsComponent) return;
 
 	// Set current player stats to upgrade menu
-	CurrentHealthText->SetText(FText::FromString(FString::Printf(TEXT("Health: %.0f"), StatsComponent->MaxHealth)));
-	CurrentStaminaText->SetText(FText::FromString(FString::Printf(TEXT("Stamina: %.0f"), StatsComponent->MaxStamina)));
-	CurrentDamageText->SetText(FText::FromString(FString::Printf(TEXT("Damage: %.0f"), StatsComponent->Weapon->Damage)));
-	CurrentLevelText->SetText(FText::FromString(FString::Printf(TEXT("Level: %.0d"), StatsComponent->Level)));
+	CurrentHealthText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), StatsComponent->MaxHealth)));
+	CurrentStaminaText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), StatsComponent->MaxStamina)));
+	CurrentDamageText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), StatsComponent->Weapon->Damage)));
+	CurrentLevelText->SetText(FText::FromString(FString::Printf(TEXT("%.0d"), StatsComponent->Level)));
 
 	// Next stats
 	const float NextHealth = StatsComponent->MaxHealth + 50.0f;

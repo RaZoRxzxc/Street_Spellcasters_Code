@@ -8,6 +8,7 @@
 #include "Components/Button.h"
 #include "Components/ScrollBox.h"
 #include "Components/Button.h"
+#include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Widgets/MenuHUD.h"
 
@@ -53,6 +54,9 @@ void USelectMapWidget::UpdateMapInfo(const FMapsStruct& MapData)
 
 	if (DescriptionText)
 		DescriptionText->SetText(MapData.MapDescription);
+		
+	if (MapImage)
+		MapImage->SetBrushFromTexture(MapData.MapIcon);
 }
 
 void USelectMapWidget::LoadAllMaps()
@@ -79,7 +83,7 @@ void USelectMapWidget::CreateMapWidgets()
 	for (const FMapsStruct& MapData : AvailableMaps)
 	{
 		UMapInfoWidget* MapInfoWidget = CreateWidget<UMapInfoWidget>(this, MapInfoWidgetClass);
-		if (MapInfoWidget)
+		if (MapInfoWidget && !MapData.bIsLobby)
 		{
 			MapInfoWidget->InitializeMapData(MapData);
 			MapInfoWidget->OnMapSelected.AddDynamic(this, &USelectMapWidget::OnMapSelected);

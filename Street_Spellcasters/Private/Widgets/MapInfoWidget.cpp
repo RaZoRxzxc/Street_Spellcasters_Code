@@ -17,6 +17,9 @@ void UMapInfoWidget::InitializeMapData(const FMapsStruct& NewMapData)
 	if (MapName)
 		MapName->SetText(NewMapData.MapName);
 	
+	if (MapImage)
+		MapImage->SetBrushFromTexture(NewMapData.MapIcon);
+	
 }
 
 void UMapInfoWidget::NativeConstruct()

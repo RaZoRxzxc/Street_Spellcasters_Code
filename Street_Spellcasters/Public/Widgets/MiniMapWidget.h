@@ -20,6 +20,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UMapWidget* MapWidget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class USlider* ZoomSlider;
+
 protected:
 	virtual void NativeConstruct() override;
+
+	UFUNCTION()
+	void OnZoomSliderChanged(float Value);
+
+	UFUNCTION()
+	void OnMapScaleChanged(float NewScale);
 };

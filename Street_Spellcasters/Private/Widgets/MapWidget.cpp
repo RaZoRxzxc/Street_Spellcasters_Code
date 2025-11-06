@@ -6,6 +6,7 @@
 #include "Components/Image.h"
 #include "Styling/SlateColor.h"
 #include "Components/Overlay.h"
+#include "Components/Slider.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Structs/MapsStruct.h"
@@ -229,7 +230,9 @@ FReply UMapWidget::NativeOnMouseWheel(const FGeometry& InGeometry, const FPointe
             SetRenderTranslation(CurrentTranslation);
         }
     }
-    
+
+	OnScaleChanged.Broadcast(NewScaleValue);
+	
     return FReply::Handled();
 
 }
@@ -271,8 +274,9 @@ FReply UMapWidget::NativeOnMouseMove(const FGeometry& InGeometry, const FPointer
         
 		NewTranslation.X = FMath::Clamp(NewTranslation.X, -MaxOffsetX, MaxOffsetX);
 		NewTranslation.Y = FMath::Clamp(NewTranslation.Y, -MaxOffsetY, MaxOffsetY);
-        
+		
 		SetRenderTranslation(NewTranslation);
+		
 		LastKnowLoc = InMouseEvent.GetScreenSpacePosition();
 	}
     
@@ -317,7 +321,7 @@ void UMapWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	bCanDrag = false;
-    
+	
 	if (!bDoOnce)
 	{
 		InitialSize = GetDesiredSize();

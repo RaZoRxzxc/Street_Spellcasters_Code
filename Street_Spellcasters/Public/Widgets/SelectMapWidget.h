@@ -30,6 +30,9 @@ protected:
 	UScrollBox* MapsScrollBox;
 
 	UPROPERTY(meta = (BindWidget))
+	class UImage* MapImage;
+
+	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* InfoBox;
 
 	UPROPERTY(meta = (BindWidget))

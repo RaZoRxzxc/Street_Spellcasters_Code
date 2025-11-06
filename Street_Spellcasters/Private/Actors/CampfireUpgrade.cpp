@@ -45,6 +45,7 @@ void ACampfireUpgrade::InteractWith_Implementation(ACharacter* Character)
 	//ABaseCharacter* Player = Cast<ABaseCharacter>(Character);
 	if (CanLevelUp())
 	{
+		PlayerHUD->HideInteractBox();
 		PlayerHUD->ShowLevelUpMenu();
 	}
 }

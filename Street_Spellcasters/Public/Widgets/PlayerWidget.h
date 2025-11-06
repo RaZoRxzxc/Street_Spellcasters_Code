@@ -79,7 +79,7 @@ public:
 	void SoulsPointsUpdate(const int32 CurrentPoints);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level", meta = (BindWidget))
-	UHorizontalBox* InteractHorizontalBox;
+	class USizeBox* InteractBox;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level", meta = (BindWidget))
 	UTextBlock* InteractText;

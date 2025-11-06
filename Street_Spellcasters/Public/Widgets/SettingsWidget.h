@@ -48,6 +48,9 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UBaseSaveGame> SaveGameObject;
+	
+   	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+    UVerticalBox* InputSettingsVB;
 private:
 	
 	UPROPERTY(meta = (BindWidget))
@@ -55,21 +58,9 @@ private:
 	
 	UPROPERTY(meta = (BindWidget))
     UVerticalBox* AudioSettingsVB;
-    	
-   	UPROPERTY(meta = (BindWidget))
-    UVerticalBox* InputSettingsVB;
-
+	
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* SensitivityBox;
-
-	UPROPERTY(meta = (BindWidget))
-	UVerticalBox* MovementBox;
-
-	UPROPERTY(meta = (BindWidget))
-	UVerticalBox* InteractBox;
-
-	UPROPERTY(meta = (BindWidget))
-	UVerticalBox* CombatBox;
 	
 	void RegisterCVars();
 	
@@ -86,5 +77,4 @@ private:
 	void AddResolutionSetting();
 	void AddQualitySetting(const FText& DisplayName, const FString& CVarName);
 	void AddSliderSetting(UVerticalBox* TargetVerticalBox, const FText& DisplayName, const FString& CVarName = "");
-	void AddKeyBindingSetting(UVerticalBox* TargetVerticalBox, const FText& DisplayName);
 };

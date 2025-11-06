@@ -10,16 +10,17 @@
 
 class UTexture2D;
 class UImage;
-
-#define M_DrawCircle(Ptr)\
 	
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnScaleChanged, float, NewScale);
 UCLASS()
 class STREET_SPELLCASTERS_API UMapWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
+
+	UPROPERTY(BlueprintAssignable, Category = "Map")
+	FOnScaleChanged OnScaleChanged;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MapWidth = 80000.0f;
@@ -36,6 +37,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Texture)
 	UTexture2D* MapTexture;
 	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetMinScale() const { return MinScale; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetMaxScale() const { return MaxScale; }
 protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

@@ -11,10 +11,9 @@
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "GameFramework/GameUserSettings.h"
-#include "EnhancedInputSubsystems.h"
 #include "UserSettings/EnhancedInputUserSettings.h"
-#include "InputCoreTypes.h" // For FKey and FInputChord
-#include "InputAction.h"
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInput/Public/InputMappingContext.h"
 
 void USettingsEntryWidget::InitializeSetting(const FText& InDisplayName, ESettingWidgetType InWidgetType, const FString& InCVarName, EDisplaySettingType InDisplayType)
 {
@@ -83,10 +82,6 @@ void USettingsEntryWidget::InitializeSetting(const FText& InDisplayName, ESettin
             }
         }
     }
-    else if (WidgetType == ESettingWidgetType::InputKeySelector && KeySelector && AssociatedInputAction)
-    {
-      
-    }
 }
 
 void USettingsEntryWidget::NativeConstruct()
@@ -118,11 +113,6 @@ void USettingsEntryWidget::NativeConstruct()
         SettingSlider->OnValueChanged.AddDynamic(this, &USettingsEntryWidget::OnSliderValueChanged);
     }
 
-    if (KeySelector)
-    {
-        KeySelector->OnKeySelected.AddDynamic(this, &USettingsEntryWidget::OnKeySelected);
-    }
-
     UpdateVisibility();
 }
 
@@ -140,8 +130,6 @@ void USettingsEntryWidget::UpdateVisibility()
     if (SliderBox) 
         SliderBox->SetVisibility(WidgetType == ESettingWidgetType::Slider ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
     
-    if (InputKeyBox) 
-        InputKeyBox->SetVisibility(WidgetType == ESettingWidgetType::InputKeySelector ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
 }
 
 void USettingsEntryWidget::OnComboSelectionChanged(FName SelectedItem, ESelectInfo::Type SelectInfo)
@@ -215,11 +203,6 @@ void USettingsEntryWidget::OnSliderValueChanged(float Value)
     }
     
     OnSliderValueChangedDelegate.Broadcast(CurrentSliderValue, AssociatedSoundClass, CVarName);
-}
-
-void USettingsEntryWidget::OnKeySelected(FInputChord SelectedKey)
-{
-    
 }
 
 void USettingsEntryWidget::PopulateDisplayModes()
