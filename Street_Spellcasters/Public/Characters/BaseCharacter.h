@@ -60,59 +60,7 @@ public:
 	// Camera componentw
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* CameraComp;
-
-	// // Jump Input Action
-	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	// UInputAction* JumpAction;
-	//
-	// // Sprint Input Action
-	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	// UInputAction* SprintAction;
-	//
-	// // Move Input Action
-	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	// UInputAction* MoveAction;
-	//
-	// // Look Input Action
-	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	// UInputAction* LookAction;
-	//
-	// // Attack Input Action
-	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	// UInputAction* AttackAction;
-	//
-	// // Block Input Action
-	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	// UInputAction* BlockAction;
-	//
-	// // Evade Input Action
-	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	// UInputAction* EvadeAction;
-	//
-	// // Interact Input Action
-	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	// UInputAction* InteractAction;
-	//
-	// // Heal Input Action
-	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	// UInputAction* HealAction;
-	//
-	// // Map Input Action
-	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	// UInputAction* MapAction;
-	//
-	// // Zoom in Input Action
-	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	// UInputAction* ZoomInAction;
-	//
-	// // Zoom out Input Action
-	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	// UInputAction* ZoomOutAction;
-	//
-	// // Mapping context
-	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	// UInputMappingContext* MappingContext;
-	//
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Sprint, meta=(AllowPrivateAccess = "true"))
 	bool bIsSprint = false;
 
@@ -300,14 +248,6 @@ protected:
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
 	AActor* CurrentInteractable;
-// 	UFUNCTION(BlueprintCallable)
-// 	void SetCanShowLevelUpPanel(bool bCanShow);
-// 	
-// 	UFUNCTION(BlueprintCallable)
-// 	bool CanLevelUp() const { return bCanShowLevelPanel; }
-// 	
-// private:
-// 	bool bCanShowLevelPanel = false;
 	
 	// Perception stimulus source 
 	class UAIPerceptionStimuliSourceComponent* PerceptionStimuliSource;
@@ -319,14 +259,27 @@ public:
 protected:
 
 	// Flasks heal animation montage
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Animation")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Heal")
 	UAnimMontage* HealFlaskMontage;
 
 	// Flask heal function 
 	UFUNCTION()
 	void Heal();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Heal")
+	UStaticMeshComponent* PotionMesh;
+
+	TSubclassOf<UStaticMeshComponent> PotionClass;
+
+	bool bIsHeal = false;
+
 public:
+	UFUNCTION(BlueprintCallable)
+	void SpawnPotionMesh();
+
+	UFUNCTION(BlueprintCallable)
+	void DestroyPotionMesh();
+	
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Map")
 	class UMiniMapWidget* MapWidget;

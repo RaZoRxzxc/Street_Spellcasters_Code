@@ -43,6 +43,10 @@ ABaseCharacter::ABaseCharacter()
 	BlockEffectMesh->SetupAttachment(GetMesh());
 	BlockEffect = CreateDefaultSubobject<UNiagaraComponent>("BlockEffect");
 	BlockEffect->SetupAttachment(BlockEffectMesh);
+
+	PotionMesh = CreateDefaultSubobject<UStaticMeshComponent>("PotionMesh");
+	PotionMesh->SetupAttachment(GetMesh());
+	PotionMesh->SetHiddenInGame(true);
 	
 	if (CharacterType == ECharacterType::E_Magic)
 	{
@@ -68,7 +72,11 @@ void ABaseCharacter::BeginPlay()
 	StatsComponent->OnDeath.AddDynamic(this, &ABaseCharacter::isDead);
 	
 	SpawnWeapon();
-	
+
+	if (PotionMesh)
+	{
+		PotionMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, "Potion_Socket");
+	}
 }
 
 void ABaseCharacter::Tick(float DeltaTime)
@@ -85,10 +93,31 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 void ABaseCharacter::Heal()
 {
-	if (StatsComponent->Health < StatsComponent->MaxHealth)
+	if (StatsComponent->Health < StatsComponent->MaxHealth && !bIsHeal)
 	{
+		bIsHeal = true;
 		StatsComponent->AddHealth();
 		PlayAnimMontage(HealFlaskMontage);
+	}
+}
+
+void ABaseCharacter::SpawnPotionMesh()
+{
+	
+	if (PotionMesh && CurrentWeapon)
+	{
+		CurrentWeapon->SetActorHiddenInGame(true);
+		PotionMesh->SetHiddenInGame(false);
+	}
+}
+
+void ABaseCharacter::DestroyPotionMesh()
+{
+	if (PotionMesh && CurrentWeapon)
+	{
+		CurrentWeapon->SetActorHiddenInGame(false);
+		PotionMesh->SetHiddenInGame(true);
+		bIsHeal = false;
 	}
 }
 
@@ -100,67 +129,9 @@ void ABaseCharacter::ToggleMap()
 	}
 }
 
-// void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-// {
-// 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-//
-// 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-//
-// 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-// 	{
-// 		Subsystem->AddMappingContext(MappingContext, 0);
-//
-// 		UEnhancedInputUserSettings* UserSettings = Subsystem->GetUserSettings();
-// 		if (UserSettings)
-// 		{
-// 			if (!UserSettings->IsMappingContextRegistered(MappingContext))
-// 			{
-// 				UserSettings->RegisterInputMappingContext(MappingContext);
-// 			}
-// 		}
-// 	}
-//
-// 	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
-// 	{
-// 		// Jumping
-// 		EnhancedInput->BindAction(JumpAction, ETriggerEvent::Started, this, &ABaseCharacter::Jump);
-// 		EnhancedInput->BindAction(JumpAction, ETriggerEvent::Completed, this, &ABaseCharacter::StopJumping);
-//
-// 		// Moving
-// 		EnhancedInput->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Move);
-//
-// 		// Looking
-// 		EnhancedInput->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Look);
-//
-// 		// Attacking
-// 		EnhancedInput->BindAction(AttackAction, ETriggerEvent::Started, this, &ABaseCharacter::Attack);
-//
-// 		// Evading
-// 		EnhancedInput->BindAction(EvadeAction, ETriggerEvent::Started, this, &ABaseCharacter::Evade);
-// 		EnhancedInput->BindAction(EvadeAction, ETriggerEvent::Completed, this, &ABaseCharacter::Evade);
-// 		
-// 		// Sprinting
-// 		EnhancedInput->BindAction(SprintAction, ETriggerEvent::Triggered, this, &ABaseCharacter::StartSprint);
-// 		EnhancedInput->BindAction(SprintAction, ETriggerEvent::Completed, this, &ABaseCharacter::StopSprint);
-//
-// 		// Blocking
-// 		EnhancedInput->BindAction(BlockAction, ETriggerEvent::Triggered, this, &ABaseCharacter::StartBlocking);
-// 		EnhancedInput->BindAction(BlockAction, ETriggerEvent::Completed, this, &ABaseCharacter::EndBlocking);
-//
-// 		// Open level menu
-// 		EnhancedInput->BindAction(InteractAction, ETriggerEvent::Started, this, &ABaseCharacter::Interact);
-//
-// 		// Healing 
-// 		EnhancedInput->BindAction(HealAction, ETriggerEvent::Started, this, &ABaseCharacter::Heal);
-//
-// 		// Open map
-// 		EnhancedInput->BindAction(MapAction, ETriggerEvent::Started, this, &ABaseCharacter::ToggleMap);
-// 	}
-// }
-
 void ABaseCharacter::Jump()
 {
-	if (!bIsJumping && !bIsAttacking)
+	if (!bIsJumping && !bIsAttacking && !bIsHeal)
 	{
 		bIsJumping = true;
 		Super::Jump();
@@ -350,7 +321,7 @@ void ABaseCharacter::Evade(const FInputActionValue& Value)
 
 	if (!StatsComponent) return;
 
-	if (!StatsComponent->GetIsEvading() && bEvadeButtomPressed && StatsComponent->CanEvade())
+	if (!StatsComponent->GetIsEvading() && bEvadeButtomPressed && StatsComponent->CanEvade() && !bIsHeal)
 	{
 		if (StatsComponent)
 		{
@@ -393,7 +364,7 @@ void ABaseCharacter::Look(const FInputActionValue& Value)
 
 void ABaseCharacter::StartSprint()
 {
-	if (!bIsSprint && StatsComponent &&StatsComponent->CanSprinting())
+	if (!bIsSprint && StatsComponent &&StatsComponent->CanSprinting() && !bIsHeal)
 	{
 		bIsSprint = true;
 		StatsComponent->SetSprinting(bIsSprint);
@@ -433,7 +404,7 @@ void ABaseCharacter::StopSprint()
 // Attack function
 void ABaseCharacter::Attack()
 {
-	if (CanAttack() && AttackAnimations.Num() > 0 && StatsComponent->CanAttacking())
+	if (CanAttack() && AttackAnimations.Num() > 0 && StatsComponent->CanAttacking() && !bIsHeal)
 	{
 		bIsAttacking = true;
 		PlayAttackAnim();
@@ -578,18 +549,18 @@ void ABaseCharacter::StartBlocking()
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
-	if (AnimInstance)
+	if (AnimInstance && !bIsHeal)
 	{
 		AnimInstance->Montage_Play(BlockMontage);
-	}
+		GetCharacterMovement()->MaxWalkSpeed = 150.0f;
 
-	if (CharacterType == ECharacterType::E_Magic)
-	{
-		BlockEffectMesh->SetVisibility(true);
-		BlockEffect->SetVisibility(true);
+		if (CharacterType == ECharacterType::E_Magic)
+		{
+			BlockEffectMesh->SetVisibility(true);
+			BlockEffect->SetVisibility(true);
+		}
 	}
 	
-	GetCharacterMovement()->MaxWalkSpeed = 150.0f;
 	
 }
 
