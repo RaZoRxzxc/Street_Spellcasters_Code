@@ -23,7 +23,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	class USlider* ZoomSlider;
 
+	UFUNCTION()
+	void Show();
+
+	UFUNCTION()
+	void Hide();
 protected:
+
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
+	class UWidgetAnimation* FadeAnim;
+	
 	virtual void NativeConstruct() override;
 
 	UFUNCTION()

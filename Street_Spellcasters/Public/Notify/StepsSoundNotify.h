@@ -22,4 +22,19 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Sound")
 	TMap<UPhysicalMaterial*, USoundBase*> FootstepSounds;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Sound")
+	USoundBase* WaterFootStepSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Sound")
+    USoundBase* DeepWaterFootStepSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "PhysMat")
+	UPhysicalMaterial* WaterPM;
+
+	UFUNCTION()
+	void FootStepTraceByChannel(AActor* Owner, FVector& Location, UPhysicalMaterial*& Material, bool& bTraceHit);
+
+	UFUNCTION()
+	void FootStepWaterSplashSound(AActor* Owner, FVector SoundLocation, float WaterDepth, bool TraceCollisionHit);
 };

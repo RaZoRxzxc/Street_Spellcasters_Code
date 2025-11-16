@@ -10,6 +10,7 @@
 #include "Components/TextBlock.h"
 #include "Widgets/CharacterSelectWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Widgets/InteractionWidget.h"
 #include "Widgets/PlayerWidget.h"
 
 void APlayerHUD::BeginPlay()
@@ -96,8 +97,7 @@ void APlayerHUD::ShowInteractBox(FText NewUpgradeText)
 {
 	if (PlayerWidget)
 	{
-		PlayerWidget->InteractBox->SetVisibility(ESlateVisibility::Visible);
-		PlayerWidget->InteractText->SetText(NewUpgradeText);
+		PlayerWidget->InteractionWidget->OnInteractableOverlap(NewUpgradeText);
 	}
 }
 
@@ -106,7 +106,7 @@ void APlayerHUD::HideInteractBox()
 {
 	if (PlayerWidget)
 	{
-		PlayerWidget->InteractBox->SetVisibility(ESlateVisibility::Collapsed);
+		PlayerWidget->InteractionWidget->Hide();
 	}
 }
 
@@ -176,14 +176,14 @@ void APlayerHUD::ToggleMap()
 
 		if (bIsMapOpen)
 		{
-			MapWidget->SetVisibility(ESlateVisibility::Visible);
+			MapWidget->Show();
 			PC->SetInputMode(FInputModeGameAndUI());
 			PC->bShowMouseCursor = true;
 			
 		}
 		else
 		{
-			MapWidget->SetVisibility(ESlateVisibility::Collapsed);
+			MapWidget->Hide();
 			PC->SetInputMode(FInputModeGameOnly());
 			PC->bShowMouseCursor = false;
 		}

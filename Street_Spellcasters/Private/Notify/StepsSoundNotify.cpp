@@ -21,27 +21,104 @@ void UStepsSoundNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
 
 void UStepsSoundNotify::PlayFootstepSound(AActor* OwnerActor)
 {
-	if (!OwnerActor) return;
+	 if (!OwnerActor) return;
+    
+        UWorld* World = OwnerActor->GetWorld();
+        if (!World) return;
+	
+        FVector Start = OwnerActor->GetActorLocation();
+        FVector End = Start - FVector(0, 0, 150.0f);
+    
+        FHitResult WaterHit;
+        FHitResult GroundHit;;
+		
+    
+        FCollisionQueryParams Params;
+        Params.bReturnPhysicalMaterial = true;
+        Params.AddIgnoredActor(OwnerActor);
+	
+        bool bInWater = World->LineTraceSingleByProfile(
+            WaterHit, Start, End, FName("WaterBodyCollision"), Params
+        );
+    
+        if (bInWater && WaterHit.bBlockingHit)
+        {
+            if (WaterHit.PhysMaterial.Get() == WaterPM)
+            {
+            	bool bGroundHit = World->LineTraceSingleByChannel(GroundHit,WaterHit.Location + FVector(0, 0, 10.0f),WaterHit.Location - FVector(0, 0, 200.0f),
+            		ECC_Visibility,Params);
 
-	FVector StartLocation = OwnerActor->GetActorLocation();
-	FVector EndLocation = StartLocation - FVector(0, 0, 400.0f); 
+            	float Depth = 0.f;
 
-	FHitResult HitResult;
-	FCollisionQueryParams QueryParams;
-	QueryParams.bReturnPhysicalMaterial = true;
-	QueryParams.AddIgnoredActor(OwnerActor);
+            	if (bGroundHit)
+            	{
+            		Depth = WaterHit.Location.Z - GroundHit.Location.Z;
+            	}
 
-	if (OwnerActor->GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, QueryParams))
+            	
+            	FootStepWaterSplashSound(OwnerActor, WaterHit.Location, Depth, bGroundHit);
+            	return;
+            }
+        }
+	
+        bool bHit = World->LineTraceSingleByChannel(GroundHit, Start, End, ECC_Visibility, Params);
+    
+        if (bHit && GroundHit.bBlockingHit)
+        {
+            UPhysicalMaterial* PhysMat = GroundHit.PhysMaterial.Get();
+    
+            if (PhysMat && FootstepSounds.Contains(PhysMat))
+            {
+                UGameplayStatics::PlaySoundAtLocation(OwnerActor, FootstepSounds[PhysMat], GroundHit.Location);
+            }
+        }
+}
+
+void UStepsSoundNotify::FootStepTraceByChannel(AActor* Owner, FVector& Location, UPhysicalMaterial*& Material, bool& bTraceHit)
+{
+	if (Owner)
 	{
-		UPhysicalMaterial* PhysMaterial = HitResult.PhysMaterial.Get();
+		FVector StartLoc = FVector(30.0f, 10.0f, 0.0f);
+		FVector EndLoc = FVector(30.0f, 10.0f, -120.0f);
 
-		if (PhysMaterial && FootstepSounds.Contains(PhysMaterial))
+		FHitResult HitResult;
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(Owner);
+		
+		bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLoc, EndLoc, ECC_Visibility, Params);
+		if (bHit)
 		{
-			USoundBase* SoundToPlay = FootstepSounds[PhysMaterial];
-			if (SoundToPlay)
-			{
-				UGameplayStatics::PlaySoundAtLocation(OwnerActor, SoundToPlay, HitResult.Location);
-			}
+			Location = HitResult.Location;
+			Material = HitResult.PhysMaterial.Get();
+			bTraceHit = bHit;
+		}
+	}
+	
+}
+
+void UStepsSoundNotify::FootStepWaterSplashSound(AActor* Owner, FVector SoundLocation, float WaterDepth, bool TraceCollisionHit)
+{
+	FVector SoundLoc = SoundLocation;
+
+	bool DeepWater = !TraceCollisionHit;
+
+	if (DeepWater)
+	{
+		UGameplayStatics::PlaySoundAtLocation(Owner, WaterFootStepSound, SoundLoc);
+	}
+	else
+	{
+		if (WaterDepth > 75.0f)
+		{
+			UGameplayStatics::PlaySoundAtLocation(Owner, DeepWaterFootStepSound, SoundLoc);
+		}
+		else if (WaterDepth > 35.0f)
+		{
+			UGameplayStatics::PlaySoundAtLocation(Owner, DeepWaterFootStepSound, SoundLoc);
+		}
+		else
+		{
+			UGameplayStatics::PlaySoundAtLocation(Owner, WaterFootStepSound, SoundLoc);
 		}
 	}
 }

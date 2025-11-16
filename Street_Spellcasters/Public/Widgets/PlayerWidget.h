@@ -29,6 +29,9 @@ public:
 
 	UFUNCTION()
 	void HideStats();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction", meta = (BindWidget))
+	class UInteractionWidget* InteractionWidget;
 protected:
 	UFUNCTION()
 	void SetStatsComponent(class UStatsComponent* StatsComp);
@@ -77,12 +80,6 @@ public:
 
 	UFUNCTION()
 	void SoulsPointsUpdate(const int32 CurrentPoints);
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level", meta = (BindWidget))
-	class USizeBox* InteractBox;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level", meta = (BindWidget))
-	UTextBlock* InteractText;
 	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level", meta = (BindWidget))

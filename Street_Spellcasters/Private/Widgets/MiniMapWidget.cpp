@@ -6,6 +6,31 @@
 #include "Components/Border.h"
 #include "Components/Slider.h"
 
+void UMiniMapWidget::Show()
+{
+	PlayAnimationForward(FadeAnim);
+	SetVisibility(ESlateVisibility::Visible);
+}
+
+void UMiniMapWidget::Hide()
+{
+	if (IsVisible())
+	{
+		QueuePlayAnimationReverse(FadeAnim);
+
+		FTimerHandle TimerHandle;
+
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]
+		{
+			SetVisibility(ESlateVisibility::Collapsed);
+		}, 0.125f, false);
+	}
+	else
+	{
+		SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
+
 void UMiniMapWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
