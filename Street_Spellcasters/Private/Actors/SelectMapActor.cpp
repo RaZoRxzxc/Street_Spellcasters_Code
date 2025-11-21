@@ -9,12 +9,6 @@ ASelectMapActor::ASelectMapActor()
 {
  	
 	PrimaryActorTick.bCanEverTick = false;
-	
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
-	Mesh->SetupAttachment(RootComponent);
-
-	OverlapBox = CreateDefaultSubobject<UBoxComponent>("OverlapBox");
-	OverlapBox->SetupAttachment(Mesh);
 }
 
 void ASelectMapActor::InteractWith_Implementation(ACharacter* Character)
@@ -42,9 +36,7 @@ void ASelectMapActor::InteractWith_Implementation(ACharacter* Character)
 void ASelectMapActor::BeginPlay()
 {
 	Super::BeginPlay();
-
-	OverlapBox->OnComponentBeginOverlap.AddDynamic(this, &ASelectMapActor::OnOverlapBegin);
-	OverlapBox->OnComponentEndOverlap.AddDynamic(this, &ASelectMapActor::OnOverlapEnd);
+	
 }
 
 void ASelectMapActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -62,7 +54,7 @@ void ASelectMapActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 				// Show interact horizontal box when player overlap collision
 				PlayerHUD->ShowInteractBox(ActorName);
 			}
-			SetCanShowMapSelectMenu(true);
+			SetCanShow(true);
 		}
 	}
 }
@@ -84,12 +76,12 @@ void ASelectMapActor::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* 
 				PlayerHUD->HideSelectMapWidget();
 			}
 				
-			SetCanShowMapSelectMenu(false);
+			SetCanShow(false);
 		}
 	}
 }
 
-void ASelectMapActor::SetCanShowMapSelectMenu(bool bCanShow)
+void ASelectMapActor::SetCanShow(bool bCanShow)
 {
 	bCanShowMapSelectMenu = bCanShow;
 }

@@ -45,6 +45,7 @@ void UStepsSoundNotify::PlayFootstepSound(AActor* OwnerActor)
         {
             if (WaterHit.PhysMaterial.Get() == WaterPM)
             {
+            	
             	bool bGroundHit = World->LineTraceSingleByChannel(GroundHit,WaterHit.Location + FVector(0, 0, 10.0f),WaterHit.Location - FVector(0, 0, 200.0f),
             		ECC_Visibility,Params);
 
@@ -54,7 +55,6 @@ void UStepsSoundNotify::PlayFootstepSound(AActor* OwnerActor)
             	{
             		Depth = WaterHit.Location.Z - GroundHit.Location.Z;
             	}
-
             	
             	FootStepWaterSplashSound(OwnerActor, WaterHit.Location, Depth, bGroundHit);
             	return;
@@ -93,7 +93,6 @@ void UStepsSoundNotify::FootStepTraceByChannel(AActor* Owner, FVector& Location,
 			bTraceHit = bHit;
 		}
 	}
-	
 }
 
 void UStepsSoundNotify::FootStepWaterSplashSound(AActor* Owner, FVector SoundLocation, float WaterDepth, bool TraceCollisionHit)

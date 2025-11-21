@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InteractableActor.h"
 #include "Interface/InteractInterface.h"
 #include "GameFramework/Actor.h"
 #include "CampfireUpgrade.generated.h"
@@ -11,7 +12,7 @@ class UBoxComponent;
 class UStaticMeshComponent;
 
 UCLASS()
-class STREET_SPELLCASTERS_API ACampfireUpgrade : public AActor, public IInteractInterface
+class STREET_SPELLCASTERS_API ACampfireUpgrade : public AInteractableActor, public IInteractInterface
 {
 	GENERATED_BODY()
 	
@@ -33,32 +34,31 @@ public:
 	
 protected:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Name)
-	FText ActorName;
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Name)
+	// FText ActorName;
 	
 	virtual void BeginPlay() override;
 	
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
-	UStaticMeshComponent* MeshComp;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Collision")
-	UBoxComponent* OverlapBoxComp;
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
+	// UStaticMeshComponent* Mesh;
+	//
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Collision")
+	// UBoxComponent* OverlapBox;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sounds")
 	USoundBase* HealSound;
 	
-	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	UFUNCTION()
-	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
+
+	
+	virtual void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
 
 	bool bIsOpenLevelMenu = false;
-
-	UFUNCTION(BlueprintCallable)
-	void SetCanShowLevelUpPanel(bool bCanShow);
+	
+	virtual void SetCanShow(bool bCanShow) override;
 	
 	UFUNCTION(BlueprintCallable)
 	bool CanLevelUp() const { return bCanShowLevelPanel; }

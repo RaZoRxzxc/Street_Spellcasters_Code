@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Actors/InteractableActor.h"
 #include  "Interface/InteractInterface.h"
 #include "ChangeCharacterActor.generated.h"
 class UBoxComponent;
 
 UCLASS()
-class STREET_SPELLCASTERS_API AChangeCharacterActor : public AActor, public IInteractInterface
+class STREET_SPELLCASTERS_API AChangeCharacterActor : public AInteractableActor, public IInteractInterface
 {
 	GENERATED_BODY()
 	
@@ -20,24 +21,13 @@ public:
 	void InteractWith_Implementation(ACharacter* Character) override;
 protected:
 	virtual void BeginPlay() override;
+	
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Name)
-	FText ActorName;
+	
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Collision")
-	UBoxComponent* OverlapBox;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Collision")
-	UStaticMeshComponent* Mesh;
-
-	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
-	UFUNCTION(BlueprintCallable)
-	void SetCanShowCharSelectMenu(bool bCanShow);
+	void SetCanShow(bool bCanShow) override;
 	
 	UFUNCTION(BlueprintCallable)
 	bool CanChangeCharacter() const { return bCanShowCharSelectMenu; }

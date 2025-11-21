@@ -34,7 +34,7 @@ protected:
 
 	// Animation
 	UPROPERTY(Transient ,meta = (BindWidgetAnim))
-	class UWidgetAnimation* FadeAnim;
+	UWidgetAnimation* FadeAnim;
 	
 public:
 	

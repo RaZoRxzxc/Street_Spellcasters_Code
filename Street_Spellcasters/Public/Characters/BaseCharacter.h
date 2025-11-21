@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/StatsComponent.h"
 #include "GameFramework/Character.h"
 #include "Weapon/BaseWeapon.h"
 #include "Interface/CombatInterface.h"
@@ -51,13 +52,33 @@ public:
 	void HandleInteract_Implementation() override;
 	void HandleHeal_Implementation() override;
 	void HandleToggleMap_Implementation() override;
-	
 
-	// Spring arm componentw
+	UFUNCTION()
+	UStatsComponent* GetStatsComp() const { return StatsComponent; }
+	
+protected:
+
+	// Character face elements
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* HairMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* FaceMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* FrecklesMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* BrowsMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* EyesMesh;
+
+	// Spring arm component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* SpringArm;
 
-	// Camera componentw
+	// Camera component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* CameraComp;
 	
@@ -65,8 +86,7 @@ public:
 	bool bIsSprint = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class UStatsComponent* StatsComponent;
-protected:
+	UStatsComponent* StatsComponent;
 	
 	/** Evade funtion */
 	void Evade(const FInputActionValue& Value);
@@ -126,8 +146,6 @@ public:
 	float SprintSpeed;
 	
 private:
-	// /** Setup input function */
-	// virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	/** Jumping function */
 	void Jump() override;
@@ -175,47 +193,6 @@ public:
 	// Check can attack
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Attack)
 	bool bIsAttacking = false;
-	
-	// Spawn projectile in hands
-	UFUNCTION(BlueprintCallable)
-	void SpawnProjectile();
-
-	// Spawn projectile for magic staff weapon
-	UFUNCTION(BlueprintCallable)
-	void SpawnStaffProjectile();
-
-	// Find closest enemy function
-	UFUNCTION(BlueprintCallable)
-	AActor* FindClosestEnemy() const;
-
-	// Angle for detected enemy
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-	float TargetingConeAngle = 60.0f;
-
-	// Distance for detected enemy
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-	float TargetingDistance = 2000.0f;
-
-	// Distance for spawn projectile forward 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-	float ForwardAttackDistance = 1500.0f;
-
-	// Search enemy radius 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-	float EnemySearchRadius = 2000.0f;
-
-	// Socket name for spawn projectile
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile")
-	FName StaffProjectileSocket = "Projectile_Socket";
-	
-	// Check for a left hand 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool bIsLeftHand = false;
-
-	// Projectile class
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile)
-	TSubclassOf<class ABaseProjectile> ProjectileActor;
-	
 	/** Dead system */
 	UFUNCTION(BlueprintCallable)
 	void isDead();

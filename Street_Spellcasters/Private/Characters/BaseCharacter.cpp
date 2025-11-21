@@ -29,9 +29,25 @@ ABaseCharacter::ABaseCharacter()
 	SpringArm->SetupAttachment(GetCapsuleComponent());
 
 	/** Camera */
-	CameraComp = CreateDefaultSubobject<UCameraComponent>(FName("CameraComponent"));
+	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	CameraComp->SetupAttachment(SpringArm);
 	CameraComp->bUsePawnControlRotation = false;
+
+	// Setup Face elements to character mesh
+	HairMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hair"));
+	HairMesh->SetupAttachment(GetMesh(), TEXT("head"));
+	
+	FaceMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Face"));
+	FaceMesh->SetupAttachment(GetMesh(), TEXT("head"));
+	
+	FrecklesMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Freckles"));
+	FrecklesMesh->SetupAttachment(GetMesh(), TEXT("head"));
+	
+	BrowsMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Brows"));
+	BrowsMesh->SetupAttachment(GetMesh(), TEXT("head"));
+	
+	EyesMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Eyes"));
+	EyesMesh->SetupAttachment(GetMesh()), TEXT("head");
 
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	WalkSpeed = 300.0f;
@@ -72,6 +88,8 @@ void ABaseCharacter::BeginPlay()
 	StatsComponent->OnDeath.AddDynamic(this, &ABaseCharacter::isDead);
 	
 	SpawnWeapon();
+
+	bIsAttacking = GetStatsComp()->GetIsAttack();
 
 	if (PotionMesh)
 	{
@@ -145,154 +163,6 @@ void ABaseCharacter::StopJumping()
 		bIsJumping = false;
 		Super::StopJumping();
 	}
-}
-
-// Spawn projectile in hands
-void ABaseCharacter::SpawnProjectile()
-{
-	// Sockets location on character mesh
-	FVector LeftSpawnLocation = GetMesh()->GetSocketLocation("LeftProjectile");
-	FVector RightSpawnLocation = GetMesh()->GetSocketLocation("RightProjectile");
-
-	// Camera rotation and location 
-	FVector CameraLocation;
-	FRotator CameraRotation;
-	Controller->GetPlayerViewPoint(CameraLocation, CameraRotation);
-
-	// The direction of the projectile's flight from the character's hands to the center of the screen
-	FVector TargetLocation = CameraLocation + CameraRotation.Vector() * 2000.0f;
-	
-	FVector LeftShootDirection = (TargetLocation - LeftSpawnLocation).GetSafeNormal();
-	FVector RightShootDirection = (TargetLocation - RightSpawnLocation).GetSafeNormal();
-	
-	ABaseProjectile* Projectile = nullptr;
-
-	// Check on left hand and spawn projectile on left or right hands when player attacking
-	if (bIsLeftHand)
-	{
-		bIsLeftHand = false;
-		Projectile = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileActor, RightSpawnLocation, RightShootDirection.Rotation());
-	}
-	else
-	{
-		bIsLeftHand = true;
-		Projectile = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileActor, LeftSpawnLocation, LeftShootDirection.Rotation());
-	}
-
-	// Set projectile damage
-	if (ProjectileActor && CurrentWeapon)
-	{
-		Projectile->SetDamage(CurrentWeapon->Damage);
-	}
-}
-
-// Spawn Projectile for magic staff weapon
-void ABaseCharacter::SpawnStaffProjectile()
-{
-	// Find closest enemy
-	AActor* TargetEnemy = FindClosestEnemy();
-
-	// Spawn projectile location  
-	FVector SpawnLocation = CurrentWeapon ? CurrentWeapon->WeaponMesh->GetSocketLocation(StaffProjectileSocket) : GetActorLocation();
-    
-	FRotator SpawnRotation;
-	FVector ShootDirection;
-
-	// Projectile flies into the nearest enemy
-	if (TargetEnemy)
-	{
-		ShootDirection = (TargetEnemy->GetActorLocation() - SpawnLocation).GetSafeNormal();
-	}
-	else
-	{
-		// Projectile flies forward when there are no enemies nearby
-		
-		FVector CameraLocation;
-		FRotator CameraRotation;
-        
-		if (Controller)
-		{
-			Controller->GetPlayerViewPoint(CameraLocation, CameraRotation);
-		}
-		else
-		{
-			CameraLocation = GetActorLocation();
-			CameraRotation = GetActorRotation();
-		}
-        
-		ShootDirection = CameraRotation.Vector();
-	}
-
-	SpawnRotation = ShootDirection.Rotation();
-	
-	if (!ProjectileActor)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ProjectileActor is not set!"));
-		return;
-	}
-	
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;
-	SpawnParams.Instigator = GetInstigator();
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-    
-	ABaseProjectile* Projectile = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileActor, SpawnLocation, SpawnRotation, SpawnParams);
-    
-	if (Projectile)
-	{
-		Projectile->SetOwner(this);
-		Projectile->SetDamage(CurrentWeapon->Damage);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to spawn projectile!"));
-	}
-}
-
-// Find closest enemy in player view radius
-AActor* ABaseCharacter::FindClosestEnemy() const
-{
-	TArray<AActor*> FoundEnemies;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseEnemyCharacter::StaticClass(), FoundEnemies);
-
-	AActor* ClosestEnemy = nullptr;
-	float MinDistance = FLT_MAX;
-	FVector ViewLocation;
-	FRotator ViewRotation;
-	
-	if (Controller)
-	{
-		Controller->GetPlayerViewPoint(ViewLocation, ViewRotation);
-	}
-	else
-	{
-		ViewLocation = GetActorLocation();
-		ViewRotation = GetActorRotation();
-	}
-
-	FVector ViewDirection = ViewRotation.Vector();
-
-	for (AActor* Enemy : FoundEnemies)
-	{
-		FVector EnemyLocation = Enemy->GetActorLocation();
-		FVector ToEnemy = (EnemyLocation - ViewLocation).GetSafeNormal();
-		
-		float DotProduct = FVector::DotProduct(ViewDirection, ToEnemy);
-		float Angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
-		
-		float Distance = FVector::Dist(ViewLocation, EnemyLocation);
-		
-		if (Angle <= TargetingConeAngle * 0.5f && Distance <= TargetingDistance)
-		{
-			if (Distance < MinDistance)
-			{
-				MinDistance = Distance;
-				ClosestEnemy = Enemy;
-			}
-		}
-	}
-
-	return ClosestEnemy;
 }
 
 // Death function
@@ -601,11 +471,7 @@ void ABaseCharacter::Interact()
 	if (CurrentInteractable && CurrentInteractable->GetClass()->ImplementsInterface(UInteractInterface::StaticClass()))
 	{
 		IInteractInterface::Execute_InteractWith(CurrentInteractable, this);
-		UE_LOG(LogTemp, Log, TEXT("Interacted with %s"), *CurrentInteractable->GetName());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("No interactable object nearby"));
+		//UE_LOG(LogTemp, Log, TEXT("Interacted with %s"), *CurrentInteractable->GetName());
 	}
 }
 

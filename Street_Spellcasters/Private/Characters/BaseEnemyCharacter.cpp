@@ -59,7 +59,7 @@ void ABaseEnemyCharacter::isDead()
 		
 		if (ABaseCharacter* Player = Cast<ABaseCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0)))
 		{
-			Player->StatsComponent->AddPoints(SoulsToGive);
+			Player->GetStatsComp()->AddPoints(SoulsToGive);
 		}
 		
 		GetMesh()->SetSimulatePhysics(true);

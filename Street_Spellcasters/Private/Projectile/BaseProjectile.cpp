@@ -6,12 +6,10 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Characters/BaseEnemyCharacter.h"
-#include "Weapon/BaseWeapon.h"
 
 ABaseProjectile::ABaseProjectile()
 {
-	PrimaryActorTick.bCanEverTick = true; 
-
+	PrimaryActorTick.bCanEverTick = true;
 	
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>("CollisionComponent");
 	CollisionComponent->SetupAttachment(GetRootComponent());
@@ -26,22 +24,33 @@ ABaseProjectile::ABaseProjectile()
 	ProjectileComponent->MaxSpeed = 1000.f;
 }
 
-void ABaseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	FVector NormalImpulse, const FHitResult& Hit)
-{
-	if ((OtherActor != this) && OtherActor)
-	{
-		AController* Controller = (GetInstigator() != nullptr) ? GetInstigator()->GetController() : nullptr;
-		
-		UGameplayStatics::ApplyDamage(OtherActor, Damage, Controller, this, UDamageType::StaticClass());
 
-		if (HitEffect)
-		{
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HitEffect, GetActorLocation(), GetActorRotation());
-		}
-		
-		Destroy();
+void ABaseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+                            FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (!OtherActor || OtherActor == this)
+	{
+		return;
 	}
+	
+	AActor* InstigatorActor = GetInstigator();
+	AActor* OwnerActor = GetOwner();
+
+	if (OtherActor == InstigatorActor || OtherActor == OwnerActor)
+	{
+		return;
+	}
+	
+	AController* Controller = (GetInstigator() != nullptr) ? GetInstigator()->GetController() : nullptr;
+		
+	UGameplayStatics::ApplyDamage(OtherActor, Damage, Controller, this, UDamageType::StaticClass());
+
+	if (HitEffect)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HitEffect, GetActorLocation(), GetActorRotation());
+	}
+		
+	Destroy();
 }
 
 void ABaseProjectile::BeginPlay()

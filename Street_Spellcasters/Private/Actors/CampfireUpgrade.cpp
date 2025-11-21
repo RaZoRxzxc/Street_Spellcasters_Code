@@ -14,16 +14,10 @@ ACampfireUpgrade::ACampfireUpgrade()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
-	MeshComp->SetupAttachment(RootComponent);
-	
-	OverlapBoxComp = CreateDefaultSubobject<UBoxComponent>("OverlapBox");
-	OverlapBoxComp->SetupAttachment(MeshComp);
-
-	OverlapBoxComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	OverlapBoxComp->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
-	OverlapBoxComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	OverlapBoxComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	OverlapBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	OverlapBox->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
+	OverlapBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	OverlapBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	
 }
 
@@ -55,13 +49,9 @@ void ACampfireUpgrade::BeginPlay()
 {
 	Super::BeginPlay();
 
-	OverlapBoxComp->OnComponentBeginOverlap.AddDynamic(this, &ACampfireUpgrade::ACampfireUpgrade::OnOverlapBegin);
-	OverlapBoxComp->OnComponentEndOverlap.AddDynamic(this, &ACampfireUpgrade::OnOverlapEnd);
-
 	// Register this campfire on all player maps
 	TArray<AActor*> PlayerCharacters;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseCharacter::StaticClass(), PlayerCharacters);
-
 	
 }
 
@@ -92,11 +82,11 @@ void ACampfireUpgrade::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActo
 			}
 			
 			// Show upgrade widget
-			SetCanShowLevelUpPanel(true);
+			SetCanShow(true);
 		}
 	
 		// Restore stats to max
-		Player->StatsComponent->RestoreStatsToMax();
+		Player->GetStatsComp()->RestoreStatsToMax();
 
 		// Play heal sound when player overlap collision 
 		if (HealSound)
@@ -126,10 +116,10 @@ void ACampfireUpgrade::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor*
 			}
 		}
 
-		SetCanShowLevelUpPanel(false);
+		SetCanShow(false);
 }
 
-void ACampfireUpgrade::SetCanShowLevelUpPanel(bool bCanShow)
+void ACampfireUpgrade::SetCanShow(bool bCanShow)
 {
 	bCanShowLevelPanel = bCanShow;
 }

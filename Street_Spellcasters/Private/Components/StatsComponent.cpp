@@ -221,6 +221,7 @@ void UStatsComponent::ApplyDamage(AActor* DamagedActor,float Damage, const class
 	
 	float ActualDamage = Damage;
 	bool bWasBlocked = false;
+	bIsAttack = false;
 	
 	if (bIsBlocking)
 	{

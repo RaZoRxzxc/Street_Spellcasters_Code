@@ -49,7 +49,6 @@ protected:
 private:
 	AActor* HomingTarget;
 
-	class AWeapon* Weapon;
 public:	
 	UFUNCTION()
 	void SetHomingTarget(AActor* Target);

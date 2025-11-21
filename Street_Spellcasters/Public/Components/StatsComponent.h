@@ -117,7 +117,9 @@ private:
 	// On hit montage ended
 	void OnHitMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
+	bool bIsAttack = false;
 public:
+	bool GetIsAttack() const {return bIsAttack;}
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Hit_Reaction")
 	bool bIsTakeHit = false;

@@ -10,11 +10,6 @@ AChangeCharacterActor::AChangeCharacterActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
-	Mesh->SetupAttachment(RootComponent);
-
-	OverlapBox = CreateDefaultSubobject<UBoxComponent>("OverlapBox");
-	OverlapBox->SetupAttachment(Mesh);
 }
 
 void AChangeCharacterActor::InteractWith_Implementation(ACharacter* Character)
@@ -43,9 +38,6 @@ void AChangeCharacterActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	OverlapBox->OnComponentBeginOverlap.AddDynamic(this, &AChangeCharacterActor::OnOverlapBegin);
-	OverlapBox->OnComponentEndOverlap.AddDynamic(this, &AChangeCharacterActor::OnOverlapEnd);
-
 }
 
 void AChangeCharacterActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -63,7 +55,7 @@ void AChangeCharacterActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, 
 				// Show interact horizontal box when player overlap collision
 				PlayerHUD->ShowInteractBox(ActorName);
 			}
-			SetCanShowCharSelectMenu(true);
+			SetCanShow(true);
 		}
 	}
 }
@@ -85,12 +77,12 @@ void AChangeCharacterActor::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AA
 				PlayerHUD->HideCharacterSelectMenu();
 			}
 				
-			SetCanShowCharSelectMenu(false);
+			SetCanShow(false);
 		}
 	}
 }
 
-void AChangeCharacterActor::SetCanShowCharSelectMenu(bool bCanShow)
+void AChangeCharacterActor::SetCanShow(bool bCanShow)
 {
 	bCanShowCharSelectMenu = bCanShow;
 }
