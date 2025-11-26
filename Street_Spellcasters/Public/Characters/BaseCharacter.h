@@ -147,7 +147,7 @@ public:
 	
 private:
 
-	/** Jumping function */
+	// Jump function
 	void Jump() override;
 	void StopJumping() override;
 	
@@ -228,12 +228,13 @@ public:
 	
 	// Perception stimulus source 
 	class UAIPerceptionStimuliSourceComponent* PerceptionStimuliSource;
-public:
 
+	UFUNCTION()
+	bool CanHeal() const { return bIsHeal; }
+protected:
 	// Tick function
 	virtual void Tick(float DeltaTime) override;
 
-protected:
 
 	// Flasks heal animation montage
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Heal")
@@ -242,6 +243,9 @@ protected:
 	// Flask heal function 
 	UFUNCTION()
 	void Heal();
+	
+	UFUNCTION(BlueprintCallable)
+    void HealEnd();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Heal")
 	UStaticMeshComponent* PotionMesh;
@@ -250,18 +254,14 @@ protected:
 
 	bool bIsHeal = false;
 
-public:
 	UFUNCTION(BlueprintCallable)
 	void SpawnPotionMesh();
 
 	UFUNCTION(BlueprintCallable)
 	void DestroyPotionMesh();
 	
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Map")
 	class UMiniMapWidget* MapWidget;
-
-protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map")
 	TSubclassOf<UUserWidget> MapWidgetClass;
@@ -277,7 +277,6 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	bool IsMapOpen() const { return bIsMapOpen; }
 	
-
 };
 
 

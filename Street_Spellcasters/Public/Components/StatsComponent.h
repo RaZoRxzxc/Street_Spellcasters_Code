@@ -51,6 +51,8 @@ public:
 	
 protected:
 
+	void InterruptActions();
+	
 	// Begin play
 	virtual void BeginPlay() override;
 

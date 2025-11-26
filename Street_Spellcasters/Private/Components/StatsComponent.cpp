@@ -4,6 +4,7 @@
 #include "Components/StatsComponent.h"
 #include "GameFramework/Character.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Characters/BaseCharacter.h"
 #include "Characters/BaseEnemyCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Weapon/BaseWeapon.h"
@@ -43,6 +44,20 @@ UStatsComponent::UStatsComponent()
 	// Flasks amount
 	FlasksAmount = 3;
 	
+}
+
+void UStatsComponent::InterruptActions()
+{
+	bIsEvading = false;
+	bIsBlocking = false;
+	bIsTakeHit = false;
+	
+	bIsAttack = false;
+
+	if (AActor* Owner = GetOwner())
+	{
+		Owner->CallFunctionByNameWithArguments(TEXT("HealEnd"), *GLog, nullptr, true);
+	}
 }
 
 void UStatsComponent::BeginPlay()
@@ -218,6 +233,8 @@ void UStatsComponent::OnHitMontageEnded(UAnimMontage* Montage, bool bInterrupted
 void UStatsComponent::ApplyDamage(AActor* DamagedActor,float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
 {
 	if (Damage <= 0.0f && IsDead()) return;
+
+	InterruptActions();
 	
 	float ActualDamage = Damage;
 	bool bWasBlocked = false;
@@ -236,7 +253,7 @@ void UStatsComponent::ApplyDamage(AActor* DamagedActor,float Damage, const class
 			bWasBlocked = true;
 		}
 	}
-
+	
 	CalculateHitDirection(DamageCauser->GetActorLocation());
 	PlayHitAnimation(bWasBlocked);
 	

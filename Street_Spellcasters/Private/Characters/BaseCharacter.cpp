@@ -119,6 +119,11 @@ void ABaseCharacter::Heal()
 	}
 }
 
+void ABaseCharacter::HealEnd()
+{
+	bIsHeal = false;
+}
+
 void ABaseCharacter::SpawnPotionMesh()
 {
 	
@@ -135,7 +140,7 @@ void ABaseCharacter::DestroyPotionMesh()
 	{
 		CurrentWeapon->SetActorHiddenInGame(false);
 		PotionMesh->SetHiddenInGame(true);
-		bIsHeal = false;
+		HealEnd();
 	}
 }
 
@@ -337,79 +342,66 @@ void ABaseCharacter::isPlayerDead_Implementation(bool& IsDead)
 
 void ABaseCharacter::HandleMove_Implementation(const FInputActionValue& Value)
 {
-	//IInputHandlerInterface::HandleMove_Implementation(Value);
 	Move(Value);
 }
 
 void ABaseCharacter::HandleLook_Implementation(const FInputActionValue& Value)
 {
-	//IInputHandlerInterface::HandleLook_Implementation(Value);
 	Look(Value);
 }
 
 void ABaseCharacter::HandleJump_Implementation()
 {
-	//IInputHandlerInterface::HandleJump_Implementation();
 	Jump();
 }
 
 void ABaseCharacter::HandleStopJumping_Implementation()
 {
-	//IInputHandlerInterface::HandleStopJumping_Implementation();
 	StopJumping();
 }
 
 void ABaseCharacter::HandleSprintStart_Implementation()
 {
-	//IInputHandlerInterface::HandleSprintStart_Implementation();
 	StartSprint();
 }
 
 void ABaseCharacter::HandleSprintStop_Implementation()
 {
-	//IInputHandlerInterface::HandleSprintStop_Implementation();
 	StopSprint();
 }
 
 void ABaseCharacter::HandleAttack_Implementation()
 {
-	//IInputHandlerInterface::HandleAttack_Implementation();
 	Attack();
 }
 
 void ABaseCharacter::HandleBlockStart_Implementation()
 {
-	//IInputHandlerInterface::HandleBlockStart_Implementation();
 	StartBlocking();
 }
 
 void ABaseCharacter::HandleBlockEnd_Implementation()
 {
-	//IInputHandlerInterface::HandleBlockEnd_Implementation();
 	EndBlocking();
 }
 
 void ABaseCharacter::HandleEvade_Implementation(const FInputActionValue& Value)
 {
-	//IInputHandlerInterface::HandleEvade_Implementation(Value);
 	Evade(Value);
 }
 
 void ABaseCharacter::HandleInteract_Implementation()
 {
-	//IInputHandlerInterface::HandleInteract_Implementation();
 	Interact();
 }
 
 void ABaseCharacter::HandleHeal_Implementation()
 {
-	//IInputHandlerInterface::HandleHeal_Implementation();
 	Heal();
 }
 
 void ABaseCharacter::HandleToggleMap_Implementation()
 {
-	//IInputHandlerInterface::HandleToggleMap_Implementation();
 	ToggleMap();
 }
 
