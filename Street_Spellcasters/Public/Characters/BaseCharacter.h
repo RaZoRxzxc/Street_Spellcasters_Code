@@ -34,6 +34,8 @@ class STREET_SPELLCASTERS_API ABaseCharacter : public ACharacter, public ICombat
 public:
 	ABaseCharacter();
 
+	virtual void OnConstruction(const FTransform& Transform) override;
+
 	// Combat interface function 
 	void IsPlayerAttack_Implementation(bool& bIsAttack) override;
 	void isPlayerDead_Implementation(bool& IsDead) override;

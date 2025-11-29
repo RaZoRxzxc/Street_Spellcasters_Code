@@ -44,10 +44,10 @@ ABaseCharacter::ABaseCharacter()
 	FrecklesMesh->SetupAttachment(GetMesh(), TEXT("head"));
 	
 	BrowsMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Brows"));
-	BrowsMesh->SetupAttachment(GetMesh(), TEXT("head"));
+	BrowsMesh->SetupAttachment(GetMesh());
 	
 	EyesMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Eyes"));
-	EyesMesh->SetupAttachment(GetMesh()), TEXT("head");
+	EyesMesh->SetupAttachment(GetMesh());
 
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	WalkSpeed = 300.0f;
@@ -79,6 +79,14 @@ ABaseCharacter::ABaseCharacter()
 
 	MapWidgetClass = nullptr;
 	MapWidget = nullptr;
+}
+
+void ABaseCharacter::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+
+	GetMesh()->SetLeaderPoseComponent(EyesMesh);
+	GetMesh()->SetLeaderPoseComponent(BrowsMesh);
 }
 
 void ABaseCharacter::BeginPlay()

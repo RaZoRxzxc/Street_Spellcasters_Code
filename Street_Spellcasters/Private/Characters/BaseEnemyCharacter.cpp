@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Characters/BaseCharacter.h"
 #include "Components/StatsComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -52,21 +53,24 @@ void ABaseEnemyCharacter::ShowHealthWidgetEnd()
 
 void ABaseEnemyCharacter::isDead()
 {
-	int32 SoulsToGive = GenerateRandomSouls();
 	if (!bIsDead)
 	{
 		bIsDead = true;
-		
-		if (ABaseCharacter* Player = Cast<ABaseCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0)))
-		{
-			Player->GetStatsComp()->AddPoints(SoulsToGive);
-		}
-		
+
+		// spawn souls niagara, calculate souls amount and give to the player
+		SpawnNiagara();
+
+		// Disable movement when enemy is dead 
+		GetCharacterMovement()->DisableMovement();
+		GetCharacterMovement()->StopMovementImmediately();
+		GetCharacterMovement()->SetComponentTickEnabled(false);
+
+		// Simulate physics
 		GetMesh()->SetSimulatePhysics(true);
 
+		// disable collision 
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
-	
 }
 
 void ABaseEnemyCharacter::OnTakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
@@ -163,6 +167,38 @@ int32 ABaseEnemyCharacter::GenerateRandomSouls() const
 	int32 RandomSouls = UKismetMathLibrary::RandomIntegerInRange(MinSoulsReward, MaxSoulsReward);
 
 	return FMath::RoundToInt(RandomSouls * SoulsMultiplier);
+}
+
+void ABaseEnemyCharacter::SpawnNiagara()
+{
+	if (SoulsNiagara)
+	{
+		// Get niagara location
+		const auto SpawnSouls = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), SoulsNiagara, GetActorLocation(), FRotator::ZeroRotator);
+		const ACharacter* Char = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0); 
+
+		// Set new niagara location
+		FTimerHandle NewLocDelay;
+		GetWorldTimerManager().SetTimer(NewLocDelay, [SpawnSouls, Char, this]
+		{
+			const FVector NewLoc = UKismetMathLibrary::VInterpTo(SpawnSouls->GetComponentLocation(), Char->GetActorLocation(), GetWorld()->GetDeltaSeconds(), 400.0f);
+			SpawnSouls->SetWorldLocation(NewLoc);
+
+			// Destroy Niagara
+			FTimerHandle DestroyTimer;
+			GetWorldTimerManager().SetTimer(DestroyTimer, [SpawnSouls,this]
+			{
+				SpawnSouls->DestroyComponent();
+			}, 0.5f, false);
+
+			const int32 SoulsToGive = GenerateRandomSouls();
+			if (ABaseCharacter* Player = Cast<ABaseCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0)))
+			{
+				Player->GetStatsComp()->AddPoints(SoulsToGive);
+			}
+		}, 3.0f, false);
+		
+	}
 }
 
 void ABaseEnemyCharacter::MeleeAttack_Implementation()

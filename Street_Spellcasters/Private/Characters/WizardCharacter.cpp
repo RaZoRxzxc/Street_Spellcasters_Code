@@ -31,16 +31,19 @@ void AWizardCharacter::SpawnProjectile()
 	
 	ABaseProjectile* Projectile = nullptr;
 
+	FActorSpawnParameters Params;
+	Params.Owner = this;
+	Params.Instigator = GetInstigator();
 	// Check on left hand and spawn projectile on left or right hands when player attacking
 	if (bIsLeftHand)
 	{
 		bIsLeftHand = false;
-		Projectile = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileActor, RightSpawnLocation, RightShootDirection.Rotation());
+		Projectile = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileActor, RightSpawnLocation, RightShootDirection.Rotation(), Params);
 	}
 	else
 	{
 		bIsLeftHand = true;
-		Projectile = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileActor, LeftSpawnLocation, LeftShootDirection.Rotation());
+		Projectile = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileActor, LeftSpawnLocation, LeftShootDirection.Rotation(), Params);
 	}
 
 	// Set projectile damage

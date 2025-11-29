@@ -82,6 +82,12 @@ public:
 	void SoulsPointsUpdate(const int32 CurrentPoints);
 	
 protected:
+	FTimerHandle SoulsTimer;
+	
+	int AddedSouls;
+	int CurrentSoulsVisible;
+	int HiddenSouls;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level", meta = (BindWidget))
 	UTextBlock* LevelText;
 	

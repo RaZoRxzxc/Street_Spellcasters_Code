@@ -115,7 +115,7 @@ void UStatsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 void UStatsComponent::LevelUp()
 {
     Level++;
-    SoulsToNextLevel = FMath::RoundToInt(SoulsToNextLevel * 2.35f);
+    SoulsToNextLevel = FMath::RoundToInt(SoulsToNextLevel * 1.1f);
     
     // Increase stats on level up
     MaxHealth += 50.f;
@@ -288,7 +288,7 @@ void UStatsComponent::MeleeTrace()
 			FCollisionShape CollisionShape;
 			CollisionShape.ShapeType = ECollisionShape::Line;
 		
-			bool bHitSomething = GetWorld()->SweepSingleByChannel(Hit, TopLocation, BottomLocation, FQuat::Identity, ECC_Visibility, CollisionShape, Params);
+			bool bHitSomething = GetWorld()->SweepSingleByChannel(Hit, TopLocation, BottomLocation, FQuat::Identity, ECC_GameTraceChannel1, CollisionShape, Params);
 			
 				if (Hit.bBlockingHit)
 				{
@@ -310,19 +310,19 @@ void UStatsComponent::MeleeTrace()
 					}
 					HitActors.Add(HitActor);
 				}
-			// FColor DebugColor = bHitSomething ? FColor::Red : FColor::Green;
-			// DrawDebugCapsule(
-			// 	GetWorld(),
-			// 	(TopLocation + BottomLocation) * 0.5f,
-			// 	FVector::Distance(TopLocation, BottomLocation) * 0.5f,
-			// 	5.0f,
-			// 	FRotationMatrix::MakeFromZ(BottomLocation - TopLocation).ToQuat(),
-			// 	DebugColor,
-			// 	false,
-			// 	5.f,
-			// 	0,
-			// 	1.0f
-			// );	
+			FColor DebugColor = bHitSomething ? FColor::Red : FColor::Green;
+			DrawDebugCapsule(
+				GetWorld(),
+				(TopLocation + BottomLocation) * 0.5f,
+				FVector::Distance(TopLocation, BottomLocation) * 0.5f,
+				5.0f,
+				FRotationMatrix::MakeFromZ(BottomLocation - TopLocation).ToQuat(),
+				DebugColor,
+				false,
+				5.f,
+				0,
+				1.0f
+			);	
 	}
 	else if (!bIsTraceOn)
 	{

@@ -71,6 +71,12 @@ protected:
 
     UFUNCTION(BlueprintCallable, Category = "Souls")
     int32 GenerateRandomSouls() const;
+
+    UFUNCTION()
+    void SpawnNiagara();
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Souls")
+    class UNiagaraSystem* SoulsNiagara;
     
     /** Block animation montage */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")

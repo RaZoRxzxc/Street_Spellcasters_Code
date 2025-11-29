@@ -42,7 +42,7 @@ void ABaseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
 	}
 	
 	AController* Controller = (GetInstigator() != nullptr) ? GetInstigator()->GetController() : nullptr;
-		
+	
 	UGameplayStatics::ApplyDamage(OtherActor, Damage, Controller, this, UDamageType::StaticClass());
 
 	if (HitEffect)
@@ -58,6 +58,10 @@ void ABaseProjectile::BeginPlay()
 	Super::BeginPlay();
 	
 	CollisionComponent->OnComponentHit.AddDynamic(this, &ABaseProjectile::OnHit);
+	
+	// Ignore projectile owner 
+	CollisionComponent->MoveIgnoreActors.Add(GetOwner());
+	CollisionComponent->MoveIgnoreActors.Add(GetInstigator());
 	
 	FTimerHandle TimerHandle;
 	GetWorldTimerManager().SetTimer(TimerHandle, this, &ABaseProjectile::DestroyTile, 3.0f, false);

@@ -90,7 +90,23 @@ void UPlayerWidget::SoulsPointsUpdate(const int32 CurrentPoints)
 {
 	if (SoulsPointsText)
 	{
-		SoulsPointsText->SetText(FText::AsNumber(CurrentPoints));
+		AddedSouls = CurrentPoints;
+
+		HiddenSouls = AddedSouls + HiddenSouls;
+		GetWorld()->GetTimerManager().SetTimer(SoulsTimer, [this]
+		{
+			if (HiddenSouls != CurrentSoulsVisible)
+			{
+				CurrentSoulsVisible = CurrentSoulsVisible + 1.0f;
+				
+				SoulsPointsText->SetText(FText::AsNumber(CurrentSoulsVisible));
+			}
+			else
+			{
+				GetWorld()->GetTimerManager().ClearTimer(SoulsTimer);
+			}
+			
+		}, GetWorld()->GetDeltaSeconds(), true);
 	}
 }
 

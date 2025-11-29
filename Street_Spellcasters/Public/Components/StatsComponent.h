@@ -338,7 +338,7 @@ public:
 	int32 Level = 1;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Level")
-	int32 SoulsToNextLevel = 3300;
+	int32 SoulsToNextLevel = 130;
 
 	// Level up function
 	UFUNCTION()
