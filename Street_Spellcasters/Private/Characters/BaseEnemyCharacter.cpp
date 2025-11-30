@@ -65,6 +65,8 @@ void ABaseEnemyCharacter::isDead()
 		GetCharacterMovement()->StopMovementImmediately();
 		GetCharacterMovement()->SetComponentTickEnabled(false);
 
+
+		
 		// Simulate physics
 		GetMesh()->SetSimulatePhysics(true);
 

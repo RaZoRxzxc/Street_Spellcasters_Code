@@ -85,8 +85,8 @@ void ABaseCharacter::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-	GetMesh()->SetLeaderPoseComponent(EyesMesh);
-	GetMesh()->SetLeaderPoseComponent(BrowsMesh);
+	BrowsMesh->SetLeaderPoseComponent(GetMesh());
+	EyesMesh->SetLeaderPoseComponent(GetMesh());
 }
 
 void ABaseCharacter::BeginPlay()
