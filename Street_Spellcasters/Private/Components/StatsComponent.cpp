@@ -49,9 +49,8 @@ UStatsComponent::UStatsComponent()
 void UStatsComponent::InterruptActions()
 {
 	bIsEvading = false;
-	bIsBlocking = false;
 	bIsTakeHit = false;
-	
+	bIsHeal = false;
 	bIsAttack = false;
 
 	if (AActor* Owner = GetOwner())
@@ -233,7 +232,8 @@ void UStatsComponent::OnHitMontageEnded(UAnimMontage* Montage, bool bInterrupted
 void UStatsComponent::ApplyDamage(AActor* DamagedActor,float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
 {
 	if (Damage <= 0.0f && IsDead()) return;
-
+	if (bIsHeal) return;
+	
 	InterruptActions();
 	
 	float ActualDamage = Damage;
@@ -256,6 +256,7 @@ void UStatsComponent::ApplyDamage(AActor* DamagedActor,float Damage, const class
 	
 	CalculateHitDirection(DamageCauser->GetActorLocation());
 	PlayHitAnimation(bWasBlocked);
+	
 	
 	Health = FMath::Clamp(Health - ActualDamage, 0.0f, MaxHealth);
 
@@ -310,19 +311,19 @@ void UStatsComponent::MeleeTrace()
 					}
 					HitActors.Add(HitActor);
 				}
-			FColor DebugColor = bHitSomething ? FColor::Red : FColor::Green;
-			DrawDebugCapsule(
-				GetWorld(),
-				(TopLocation + BottomLocation) * 0.5f,
-				FVector::Distance(TopLocation, BottomLocation) * 0.5f,
-				5.0f,
-				FRotationMatrix::MakeFromZ(BottomLocation - TopLocation).ToQuat(),
-				DebugColor,
-				false,
-				5.f,
-				0,
-				1.0f
-			);	
+			// FColor DebugColor = bHitSomething ? FColor::Red : FColor::Green;
+			// DrawDebugCapsule(
+			// 	GetWorld(),
+			// 	(TopLocation + BottomLocation) * 0.5f,
+			// 	FVector::Distance(TopLocation, BottomLocation) * 0.5f,
+			// 	5.0f,
+			// 	FRotationMatrix::MakeFromZ(BottomLocation - TopLocation).ToQuat(),
+			// 	DebugColor,
+			// 	false,
+			// 	5.f,
+			// 	0,
+			// 	1.0f
+			// );	
 	}
 	else if (!bIsTraceOn)
 	{

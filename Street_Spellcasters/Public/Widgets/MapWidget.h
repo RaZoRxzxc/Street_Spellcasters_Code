@@ -10,7 +10,7 @@
 
 class UTexture2D;
 class UImage;
-	
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnScaleChanged, float, NewScale);
 UCLASS()
 class STREET_SPELLCASTERS_API UMapWidget : public UUserWidget
@@ -72,7 +72,7 @@ protected:
 	TArray<class UPointOfInterestWidget*> PointOfInterests;
 	
 	UPROPERTY()
-	TArray<ACampfireUpgrade*> RegisteredCampfires;
+	TArray<AActor*> RegisteredPOIACtors;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bCanDrag;
@@ -94,11 +94,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName CurrentLevelName;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "POI images")
 	UTexture2D* PlayerImage;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "POI images")
 	UTexture2D* CampfireImage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "POI images")
+	UTexture2D* ZoneTreeImage;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	class UOverlay* MainOverlay;
@@ -113,10 +116,10 @@ protected:
 	TSubclassOf<UPointOfInterestWidget> POIWidgetClass;
 
 	UFUNCTION()
-	void RegisterCampfires(ACampfireUpgrade* Campfire);
+	void RegisterPOI(TSubclassOf<AActor> ActorClass, UTexture2D* Icon, FVector2D Size, FLinearColor Color);
 
 	UFUNCTION()
-	void UpdateCampfires();
+	void UpdateIcons();
 
 	UFUNCTION()
 	void UpdateMapForCurrentLevel();

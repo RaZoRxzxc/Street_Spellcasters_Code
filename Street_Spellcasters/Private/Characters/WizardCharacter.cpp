@@ -109,6 +109,11 @@ void AWizardCharacter::SpawnStaffProjectile()
 	{
 		Projectile->SetOwner(this);
 		Projectile->SetDamage(CurrentWeapon->Damage);
+
+		if (TargetEnemy)
+		{
+			Projectile->SetHomingTarget(TargetEnemy);
+		}
 	}
 	else
 	{

@@ -28,7 +28,7 @@ void UMenuWidget::StartGame()
 		// Open lobby level through 0.4 seconds
 		if (MapsDataTable)
 		{
-			SelectMap("Lobby");
+			SelectMap(LobbyName);
 		}
 	}
 }

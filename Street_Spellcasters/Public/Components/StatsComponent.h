@@ -141,6 +141,9 @@ public:
 	UFUNCTION()
 	void AddHealth();
 
+	UPROPERTY(BlueprintReadOnly, Category= "Health")
+	bool bIsHeal = false;
+
 	UPROPERTY(BlueprintAssignable)
 	FOnFlasksChanged OnFlasksChanged;
 

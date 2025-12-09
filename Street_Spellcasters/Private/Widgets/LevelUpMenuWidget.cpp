@@ -6,10 +6,29 @@
 #include "Components/StatsComponent.h"
 #include "Components/TextBlock.h"
 #include "Weapon/BaseWeapon.h"
+void ULevelUpMenuWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+	
+	// Install on click function to button
+	if (UpgradeButton)
+	{
+		UpgradeButton->OnClicked.AddDynamic(this, &ULevelUpMenuWidget::Upgrade);
+	}
+
+	if (StatsComponent)
+	{
+		// Update weapon damage 
+		StatsComponent->OnDamageChanged.AddDynamic(this, &ULevelUpMenuWidget::UpdateDamage);
+
+	}
+	// Update stats menu
+	UpdateStatsMenu();
+}
 
 void ULevelUpMenuWidget::UpdateStatsMenu()
 {
-	if (!StatsComponent) return;
+	if (!StatsComponent || !StatsComponent->Weapon) return;
 
 	// Set current player stats to upgrade menu
 	CurrentHealthText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), StatsComponent->MaxHealth)));
@@ -54,28 +73,46 @@ void ULevelUpMenuWidget::Upgrade()
 	}
 }
 
+void ULevelUpMenuWidget::OnStatsChanged(float Health, float Stamina)
+{
+	UpdateStatsMenu();
+}
+
+void ULevelUpMenuWidget::OnFlasksChanged(int32 FlasksAmount)
+{
+	UpdateStatsMenu();
+}
+
+void ULevelUpMenuWidget::OnSoulsChanged(int32 SoulsAmount)
+{
+	UpdateStatsMenu();
+}
+
+void ULevelUpMenuWidget::OnLevelChanged(int32 Level)
+{
+	UpdateStatsMenu();
+}
+
+void ULevelUpMenuWidget::SetStatsComponent(UStatsComponent* StatsComp)
+{
+	StatsComponent = StatsComp;
+	if (!StatsComponent) return;
+
+	// ✔ ПОДПИСЫВАЕМСЯ НА ДЕЛЕГАТЫ
+	StatsComponent->OnLevelChanged.AddDynamic(this, &ULevelUpMenuWidget::OnLevelChanged);
+	StatsComponent->OnStatsChanged.AddDynamic(this, &ULevelUpMenuWidget::OnStatsChanged);
+	StatsComponent->OnFlasksChanged.AddDynamic(this, &ULevelUpMenuWidget::OnFlasksChanged);
+	StatsComponent->OnSoulsPointsChanged.AddDynamic(this, &ULevelUpMenuWidget::OnSoulsChanged);
+	StatsComponent->OnDamageChanged.AddDynamic(this, &ULevelUpMenuWidget::UpdateDamage);
+
+	// ✔ СРАЗУ обновляем текст
+	UpdateStatsMenu();
+}
+
 void ULevelUpMenuWidget::UpdateDamage(float Damage)
 {
 	CurrentDamageText->SetText(FText::FromString(FString::Printf(TEXT("Damage: %.0f"), Damage)));
 	NextDamageText->SetText(FText::FromString(FString::Printf(TEXT("-> %.0f"), Damage + 10.0f)));
 }
 
-void ULevelUpMenuWidget::NativeConstruct()
-{
-	Super::NativeConstruct();
-	
-	// Install on click function to button
-	if (UpgradeButton)
-	{
-		UpgradeButton->OnClicked.AddDynamic(this, &ULevelUpMenuWidget::Upgrade);
-	}
 
-	if (StatsComponent)
-	{
-		// Update weapon damage 
-		StatsComponent->OnDamageChanged.AddDynamic(this, &ULevelUpMenuWidget::UpdateDamage);
-
-	}
-	// Update stats menu
-	UpdateStatsMenu();
-}

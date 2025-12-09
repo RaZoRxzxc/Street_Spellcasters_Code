@@ -52,7 +52,9 @@ protected:
 	
 	UFUNCTION()
 	void BackHealthBarUpdate();
-	
+
+	UFUNCTION()
+	void OnStatsChangedHandler(float HealthPercent, float StaminaPercent);
 public:
 
 	UFUNCTION()

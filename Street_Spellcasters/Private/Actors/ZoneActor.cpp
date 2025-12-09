@@ -70,6 +70,69 @@ void AZoneActor::BeginPlay()
 		}, ZoneInitialDelay, false);
 }
 
+// Spawn bosses when the zone stops near a tree
+void AZoneActor::SpawnBossAtTargetTree()
+{
+	if (!ZoneTreeTargets.IsValidIndex(CurrentTreeTargetIndex)) return;
+	if (!BossClass) return;
+
+	FVector SpawnLoc = ZoneTreeTargets[CurrentTreeTargetIndex]->GetActorLocation();
+	FRotator SpawnRot = FRotator::ZeroRotator;
+
+	CurrentBoss = GetWorld()->SpawnActor<AActor>(BossClass, SpawnLoc, SpawnRot);
+
+	if (ABaseCharacter* Boss = Cast<ABaseCharacter>(CurrentBoss))
+	{
+		Boss->OnDestroyed.AddDynamic(this, &AZoneActor::OnBossKilled);
+	}
+}
+
+// When boss is dead, start next zone or spawn portal
+void AZoneActor::OnBossKilled(AActor* DestroyedActor)
+{
+	ResetZoneToInitialSize();
+
+	CurrentTreeTargetIndex++;
+
+	if (CurrentTreeTargetIndex < ZoneTreeTargets.Num())
+	{
+		StartNextZoneSequence();
+	}
+	else
+	{
+		SpawnPortal();
+	}
+}
+
+// Reset zone on default value
+void AZoneActor::ResetZoneToInitialSize()
+{
+	ZoneMesh->SetWorldScale3D(FVector(ZoneInitialScale, ZoneInitialScale, ZoneZScale));
+	bCanShrink = false;
+	CurrentStepIndex = 0;
+}
+
+void AZoneActor::StartNextZoneSequence()
+{
+	SetupFirstStep();
+
+	FTimerHandle StartTimer;
+	GetWorldTimerManager().SetTimer(StartTimer, [this]
+	{
+		bCanShrink = true;
+		StartZoneShrink(CurrentStepStruct);
+	}, CurrentStepStruct.CurrentStepSettings.PauseTimer, false);
+}
+
+// Spawn portal when second boss is died 
+void AZoneActor::SpawnPortal()
+{
+	if (!PortalClass) return;
+
+	FVector SpawnLoc = GetActorLocation();
+	GetWorld()->SpawnActor<AActor>(PortalClass, SpawnLoc, FRotator::ZeroRotator);
+}
+
 bool AZoneActor::IsPointInCylinder(const FVector& Point, const FVector& CylinderCenter, float Radius, float HalfHeight)
 {
 	if (FMath::Abs(Point.Z - CylinderCenter.Z) > HalfHeight)
@@ -187,12 +250,22 @@ bool AZoneActor::SetupNextStep()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Setting up step %d: %s"), CurrentStepIndex, *ZoneStepConfig[CurrentStepIndex].StepID.ToString());
 		
-		FVector2D RandomOffset = GetZoneRandomLocation();
-		GoalStep = GetActorLocation() + FVector(RandomOffset.X, RandomOffset.Y, 0);
+		// FVector2D RandomOffset = GetZoneRandomLocation();
+		// GoalStep = GetActorLocation() + FVector(RandomOffset.X, RandomOffset.Y, 0);
+		if (ZoneTreeTargets.IsValidIndex(CurrentTreeTargetIndex))
+		{
+			FVector TreeLocation = ZoneTreeTargets[CurrentTreeTargetIndex]->GetActorLocation();
+			FVector2D RandomOffset = GetZoneRandomLocation();
+
+			GoalStep = FVector(TreeLocation.X + RandomOffset.X * 0.3f, TreeLocation.Y + RandomOffset.Y * 0.3f, GetActorLocation().Z);
+		}
+		else
+		{
+			GoalStep = GetActorLocation();
+		}
         
 		Difference = GoalStep - GetActorLocation();
-        
-		// Расчет масштаба для следующего шага
+		
 		if (ZoneStepConfig.Num() > 0)
 		{
 			StepScale = ZoneMesh->GetComponentScale() / ZoneStepConfig.Num();

@@ -42,8 +42,7 @@ void ASelectMapActor::BeginPlay()
 void ASelectMapActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	ABaseCharacter* Player = Cast<ABaseCharacter>(OtherActor);
-	if (Player)
+	if (ABaseCharacter* Player = Cast<ABaseCharacter>(OtherActor))
 	{
 		Player->CurrentInteractable = this;
 

@@ -119,9 +119,14 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 void ABaseCharacter::Heal()
 {
-	if (StatsComponent->Health < StatsComponent->MaxHealth && !bIsHeal)
+	if (bIsDead || bIsAttacking || StatsComponent->GetIsEvading() || StatsComponent->bIsTakeHit)
 	{
-		bIsHeal = true;
+		return;
+	}
+	
+	if (StatsComponent->Health < StatsComponent->MaxHealth && !StatsComponent->bIsHeal && StatsComponent->GetFlasksAmount() != 0)
+	{
+		StatsComponent->bIsHeal = true;
 		StatsComponent->AddHealth();
 		PlayAnimMontage(HealFlaskMontage);
 	}
@@ -129,12 +134,11 @@ void ABaseCharacter::Heal()
 
 void ABaseCharacter::HealEnd()
 {
-	bIsHeal = false;
+	StatsComponent->bIsHeal = false;
 }
 
 void ABaseCharacter::SpawnPotionMesh()
 {
-	
 	if (PotionMesh && CurrentWeapon)
 	{
 		CurrentWeapon->SetActorHiddenInGame(true);

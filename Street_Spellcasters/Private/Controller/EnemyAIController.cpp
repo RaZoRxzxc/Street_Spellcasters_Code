@@ -110,7 +110,7 @@ void AEnemyAIController::SetupPerceptionConfig()
 		SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>("PerceptionComponent"));
 		SenseConfig->SightRadius = 1000.0f;
 		SenseConfig->LoseSightRadius = SenseConfig->SightRadius + 25.f;
-		SenseConfig->PeripheralVisionAngleDegrees = 90.0f;
+		SenseConfig->PeripheralVisionAngleDegrees = 180.0f;
 		SenseConfig->SetMaxAge(5.0f);
 		SenseConfig->AutoSuccessRangeFromLastSeenLocation = 520.0f;
 		SenseConfig->DetectionByAffiliation.bDetectEnemies = true;

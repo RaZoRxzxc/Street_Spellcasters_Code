@@ -88,6 +88,30 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
 	UStaticMeshComponent* ZoneMesh;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Zone Logic")
+	TArray<AActor* > ZoneTreeTargets;
+
+	int32 CurrentTreeTargetIndex = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Zone Logic")
+	TSubclassOf<AActor> BossClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Zone Logic")
+	TSubclassOf<AActor> PortalClass;
+
+	AActor* CurrentBoss = nullptr;
+
+	UFUNCTION()
+	void SpawnBossAtTargetTree();
+
+	UFUNCTION()
+	void OnBossKilled(AActor* DestroyedActor);
+
+	void ResetZoneToInitialSize();
+
+	void StartNextZoneSequence();
+	void SpawnPortal();
+	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Zone Settings")
 	FVector GoalStep;

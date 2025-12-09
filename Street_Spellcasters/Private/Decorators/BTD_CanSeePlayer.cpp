@@ -2,8 +2,6 @@
 
 
 #include "Decorators/BTD_CanSeePlayer.h"
-
-#include "PhysicsAssetRenderUtils.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 UBTD_CanSeePlayer::UBTD_CanSeePlayer()

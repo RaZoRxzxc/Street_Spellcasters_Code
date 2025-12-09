@@ -34,6 +34,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void StartGame();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Start game")
+	FName LobbyName = "Lobby";
+	
 	UFUNCTION(BlueprintCallable)
 	void OpenSettingsMenu();
 

@@ -68,14 +68,29 @@ public:
 	UFUNCTION()
 	void Upgrade();
 
-	// Set Stats component
-	void SetStatsComponent(UStatsComponent* StatsComp) { StatsComponent = StatsComp; }
+protected:
+	UFUNCTION()
+	void OnStatsChanged(float Health, float Stamina);
+	
+	UFUNCTION()
+	void OnFlasksChanged(int32 FlasksAmount);
+	
+	UFUNCTION()
+	void OnSoulsChanged(int32 SoulsAmount);
 
+	UFUNCTION()
+	void OnLevelChanged(int32 Level);
+
+public:
+	
+	// Set Stats component
+	void SetStatsComponent(UStatsComponent* StatsComp);
+
+protected:
 	// Update damage 
 	UFUNCTION()
 	void UpdateDamage(float Damage);
 	
-protected:
 
 	// Native construct
 	virtual void NativeConstruct() override;

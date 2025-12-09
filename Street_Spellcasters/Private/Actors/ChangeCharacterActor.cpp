@@ -63,8 +63,7 @@ void AChangeCharacterActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, 
 void AChangeCharacterActor::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	ABaseCharacter* Player = Cast<ABaseCharacter>(OtherActor);
-	if (Player)
+	if (ABaseCharacter* Player = Cast<ABaseCharacter>(OtherActor))
 	{
 		Player->CurrentInteractable = nullptr;
 

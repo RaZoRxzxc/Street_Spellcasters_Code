@@ -99,8 +99,8 @@ void ACampfireUpgrade::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActo
 void ACampfireUpgrade::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	ABaseCharacter* Player = Cast<ABaseCharacter>(OtherActor);
-	
+	if (ABaseCharacter* Player = Cast<ABaseCharacter>(OtherActor))
+	{
 		if (APlayerHUD* PlayerHUD = Cast<APlayerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD()))
 		{
 			Player->CurrentInteractable = nullptr;
@@ -117,6 +117,7 @@ void ACampfireUpgrade::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor*
 		}
 
 		SetCanShow(false);
+	}
 }
 
 void ACampfireUpgrade::SetCanShow(bool bCanShow)

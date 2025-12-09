@@ -65,13 +65,20 @@ void ABaseEnemyCharacter::isDead()
 		GetCharacterMovement()->StopMovementImmediately();
 		GetCharacterMovement()->SetComponentTickEnabled(false);
 
-
-		
+		// Set collision to ragdoll for simulate physics
+		GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 		// Simulate physics
 		GetMesh()->SetSimulatePhysics(true);
 
 		// disable collision 
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		FTimerHandle DestroyTimer;
+		GetWorldTimerManager().SetTimer(DestroyTimer, [this]
+		{
+			Destroy();
+			GetWeapon()->Destroy();
+		}, 3.0f, false);
 	}
 }
 

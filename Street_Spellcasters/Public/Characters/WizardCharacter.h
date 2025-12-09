@@ -25,7 +25,7 @@ protected:
 	// Spawn projectile for magic staff weapon
 	UFUNCTION(BlueprintCallable)
 	void SpawnStaffProjectile();
-
+	
 	// Find closest enemy function
 	UFUNCTION(BlueprintCallable)
 	AActor* FindClosestEnemy() const;

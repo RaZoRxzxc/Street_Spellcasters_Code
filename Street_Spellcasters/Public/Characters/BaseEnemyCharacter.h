@@ -109,6 +109,10 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
     ABaseWeapon* CurrentWeapon;
 
+public:
+    UFUNCTION(BlueprintCallable)
+    ABaseWeapon* GetWeapon() const { return CurrentWeapon; }
+protected:
     /** Enemy type */
     UPROPERTY(EditAnywhere)
     EEnemyType EnemyType;
@@ -122,8 +126,7 @@ protected:
     /** Attack helpers */
     UFUNCTION(BlueprintCallable)
     void PlayRandomAttackAnimation();
-
-
+    
     // Spawn weapon function
     UFUNCTION()
     void SpawnWeapon();

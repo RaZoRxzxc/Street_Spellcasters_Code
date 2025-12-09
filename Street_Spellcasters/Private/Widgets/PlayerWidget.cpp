@@ -33,10 +33,21 @@ void UPlayerWidget::HideStats()
 
 void UPlayerWidget::SetStatsComponent(class UStatsComponent* StatsComp)
 {
-	if (LevelUpMenu && StatsComp)
+	if (!StatsComp) return;
+
+	StatsComp->OnStatsChanged.AddDynamic(this, &UPlayerWidget::OnStatsChangedHandler);
+	StatsComp->OnSoulsPointsChanged.AddDynamic(this, &UPlayerWidget::SoulsPointsUpdate);
+	StatsComp->OnFlasksChanged.AddDynamic(this, &UPlayerWidget::FlasksTextUpdate);
+	StatsComp->OnLevelChanged.AddDynamic(this, &UPlayerWidget::LevelTextUpdate);
+
+	OnStatsChangedHandler(StatsComp->GetHealthPercent(), StatsComp->GetStaminaPercent());
+	SoulsPointsUpdate(StatsComp->GetSoulsPoints());
+	FlasksTextUpdate(StatsComp->GetFlasksAmount());
+	LevelTextUpdate(StatsComp->Level);
+
+	if (LevelUpMenu)
 	{
 		LevelUpMenu->SetStatsComponent(StatsComp);
-		LevelUpMenu->UpdateStatsMenu();
 	}
 }
 
@@ -47,6 +58,12 @@ void UPlayerWidget::BackHealthBarUpdate()
 		auto BackHealth = FMath::Lerp(BackHealthBar->GetPercent(), FrontHealthBar->GetPercent(), 1 - AlphaFloat);
 		BackHealthBar->SetPercent(BackHealth);
 	}
+}
+
+void UPlayerWidget::OnStatsChangedHandler(float HealthPercent, float StaminaPercent)
+{
+	HealthUpdate(HealthPercent);
+	StaminaUpdate(StaminaPercent);
 }
 
 void UPlayerWidget::StaminaUpdate(const float CurrentStamina)
@@ -92,21 +109,22 @@ void UPlayerWidget::SoulsPointsUpdate(const int32 CurrentPoints)
 	{
 		AddedSouls = CurrentPoints;
 
-		HiddenSouls = AddedSouls + HiddenSouls;
-		GetWorld()->GetTimerManager().SetTimer(SoulsTimer, [this]
-		{
-			if (HiddenSouls != CurrentSoulsVisible)
-			{
-				CurrentSoulsVisible = CurrentSoulsVisible + 1.0f;
-				
-				SoulsPointsText->SetText(FText::AsNumber(CurrentSoulsVisible));
-			}
-			else
-			{
-				GetWorld()->GetTimerManager().ClearTimer(SoulsTimer);
-			}
-			
-		}, GetWorld()->GetDeltaSeconds(), true);
+		SoulsPointsText->SetText(FText::AsNumber(CurrentPoints));
+		// HiddenSouls = AddedSouls + HiddenSouls;
+		// GetWorld()->GetTimerManager().SetTimer(SoulsTimer, [this]
+		// {
+		// 	if (HiddenSouls != CurrentSoulsVisible)
+		// 	{
+		// 		CurrentSoulsVisible = CurrentSoulsVisible + 1.0f;
+		// 		
+		// 		SoulsPointsText->SetText(FText::AsNumber(CurrentSoulsVisible));
+		// 	}
+		// 	else
+		// 	{
+		// 		GetWorld()->GetTimerManager().ClearTimer(SoulsTimer);
+		// 	}
+		// 	
+		// }, GetWorld()->GetDeltaSeconds(), true);
 	}
 }
 

@@ -3,6 +3,7 @@
 
 #include "Widgets/MapWidget.h"
 #include "Actors/CampfireUpgrade.h"
+#include "Actors/ZoneTree.h"
 #include "Components/Image.h"
 #include "Styling/SlateColor.h"
 #include "Components/Overlay.h"
@@ -37,23 +38,27 @@ void UMapWidget::UpdatePointOfInterests()
 			}
 		}
 	}
-	
 }
 
-void UMapWidget::RegisterCampfires(ACampfireUpgrade* Campfire)
+void UMapWidget::RegisterPOI(TSubclassOf<AActor> ActorClass, UTexture2D* Icon, FVector2D Size, FLinearColor Color)
 {
-	if (Campfire && !RegisteredCampfires.Contains(Campfire))
-	{
-		RegisteredCampfires.Add(Campfire);
+	if (!GetWorld()) return;
 
-		if (CampfireImage)
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ActorClass, FoundActors);
+
+	for (AActor* Actor : FoundActors)
+	{
+		if (!RegisteredPOIACtors.Contains(Actor))
 		{
-			AddNewPOI(Campfire, CampfireImage, FVector2D(25, 25), FLinearColor::Red);
+			RegisteredPOIACtors.Add(Actor);
+
+			AddNewPOI(Actor, Icon, Size, Color);
 		}
 	}
 }
 
-void UMapWidget::UpdateCampfires()
+void UMapWidget::UpdateIcons()
 {
 	UpdatePointOfInterests();
 }
@@ -111,6 +116,7 @@ void UMapWidget::SetMapsDataTable(UDataTable* NewDataTable)
 	if (MapsDataTable && GetWorld())
 	{
 		UpdateMapForCurrentLevel();
+		
 	}
 }
 
@@ -145,16 +151,8 @@ void UMapWidget::ChangeMapForLevel(FName LevelName)
 
 		if (GetWorld())
 		{
-			TArray<AActor*> CampfireActors;
-			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACampfireUpgrade::StaticClass(), CampfireActors);
-
-			for (AActor* Actor : CampfireActors)
-			{
-				if (ACampfireUpgrade* Campfire = Cast<ACampfireUpgrade>(Actor))
-				{
-					RegisterCampfires(Campfire);
-				}
-			}
+			RegisterPOI(ACampfireUpgrade::StaticClass(), CampfireImage, FVector2D(32, 32), FLinearColor::Red); // Campfires
+			RegisterPOI(AZoneTree::StaticClass(), ZoneTreeImage, FVector2D(32, 32), FLinearColor::Yellow);	// Zone trees
 		}
 	}
 }
@@ -341,18 +339,11 @@ void UMapWidget::NativeConstruct()
 			}
 		}
 
+		// Register all actor on the map
 		if (GetWorld())
 		{
-			TArray<AActor*> CampfireActors;
-			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACampfireUpgrade::StaticClass(), CampfireActors);
-            
-			for (AActor* Actor : CampfireActors)
-			{
-				if (ACampfireUpgrade* Campfire = Cast<ACampfireUpgrade>(Actor))
-				{
-					RegisterCampfires(Campfire);
-				}
-			}
+			RegisterPOI(ACampfireUpgrade::StaticClass(), CampfireImage, FVector2D(25,25), FLinearColor::Red); // Campfires
+			RegisterPOI(AZoneTree::StaticClass(), ZoneTreeImage, FVector2D(30,30), FLinearColor::Yellow); // Zone trees
 		}
 	}
 	bDoOnce = true;

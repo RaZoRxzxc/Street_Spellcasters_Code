@@ -24,6 +24,14 @@ ABaseProjectile::ABaseProjectile()
 	ProjectileComponent->MaxSpeed = 1000.f;
 }
 
+void ABaseProjectile::SetHomingEnemy(AActor* Target)
+{
+	if (ProjectileComponent && Target)
+	{
+		ProjectileComponent->HomingTargetComponent = Target->GetRootComponent();
+	}
+}
+
 
 void ABaseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                             FVector NormalImpulse, const FHitResult& Hit)
